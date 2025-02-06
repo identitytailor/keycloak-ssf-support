@@ -5,7 +5,6 @@ import com.identitytailor.keycloak.ssf.SharedSignalsProvider;
 import com.identitytailor.keycloak.ssf.event.SecurityEventToken;
 import com.identitytailor.keycloak.ssf.event.parser.SharedSignalsParsingException;
 import com.identitytailor.keycloak.ssf.receiver.ReceiverModel;
-import com.identitytailor.keycloak.ssf.receiver.SharedSignalsHacks;
 import com.identitytailor.keycloak.ssf.receiver.management.ReceiverManager;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.HttpHeaders;
@@ -65,38 +64,32 @@ public class SharedSignalsPushEndpoint {
         // parse security event token
         var processingContext = sharedSignals.createSecurityEventProcessingContext(null, receiverAlias);
 
-        // HACK for passing receiver model around
-        session.setAttribute(SharedSignalsHacks.RECEIVER_MODEL_SESSION_ATTRIBUTE, receiverModel);
+        // TODO validate security event token
+        SecurityEventToken securityEventToken;
         try {
-            // TODO validate security event token
-            SecurityEventToken securityEventToken;
-            try {
-                securityEventToken = sharedSignals.parse(encodedSecurityEventToken);
-            } catch (SharedSignalsParsingException sepe) {
-                // see https://www.rfc-editor.org/rfc/rfc8935.html#section-2.4
-                throw newSharedSignalFailureResponse(Response.Status.BAD_REQUEST, SharedSignalsFailureResponse.ERROR_INVALID_REQUEST, sepe.getMessage());
-            }
-
-            if (securityEventToken == null) {
-                throw newSharedSignalFailureResponse(Response.Status.BAD_REQUEST, SharedSignalsFailureResponse.ERROR_INVALID_REQUEST, "Invalid security event token");
-            }
-            log.debugf("Ingest security event token. realm=%s receiverAlias=%s jti=%s", realm.getName(), receiverAlias, securityEventToken.getId());
-
-            if (!receiverModel.getIssuer().equals(securityEventToken.getIssuer())) {
-                throw newSharedSignalFailureResponse(Response.Status.BAD_REQUEST, SharedSignalsFailureResponse.ERROR_INVALID_ISSUER, "Invalid issuer");
-            }
-
-            if (!receiverModel.getAudience().containsAll(Set.of(securityEventToken.getAudience()))) {
-                throw newSharedSignalFailureResponse(Response.Status.BAD_REQUEST, SharedSignalsFailureResponse.ERROR_INVALID_AUDIENCE, "Invalid audience");
-            }
-
-            processingContext.setSecurityEventToken(securityEventToken);
-
-            // handle security event
-            sharedSignals.processSecurityEvents(processingContext);
-        } finally {
-            session.removeAttribute(SharedSignalsHacks.RECEIVER_MODEL_SESSION_ATTRIBUTE);
+            securityEventToken = sharedSignals.parseSecurityEventToken(encodedSecurityEventToken, processingContext);
+        } catch (SharedSignalsParsingException sepe) {
+            // see https://www.rfc-editor.org/rfc/rfc8935.html#section-2.4
+            throw newSharedSignalFailureResponse(Response.Status.BAD_REQUEST, SharedSignalsFailureResponse.ERROR_INVALID_REQUEST, sepe.getMessage());
         }
+
+        if (securityEventToken == null) {
+            throw newSharedSignalFailureResponse(Response.Status.BAD_REQUEST, SharedSignalsFailureResponse.ERROR_INVALID_REQUEST, "Invalid security event token");
+        }
+        log.debugf("Ingest security event token. realm=%s receiverAlias=%s jti=%s", realm.getName(), receiverAlias, securityEventToken.getId());
+
+        if (!receiverModel.getIssuer().equals(securityEventToken.getIssuer())) {
+            throw newSharedSignalFailureResponse(Response.Status.BAD_REQUEST, SharedSignalsFailureResponse.ERROR_INVALID_ISSUER, "Invalid issuer");
+        }
+
+        if (!receiverModel.getAudience().containsAll(Set.of(securityEventToken.getAudience()))) {
+            throw newSharedSignalFailureResponse(Response.Status.BAD_REQUEST, SharedSignalsFailureResponse.ERROR_INVALID_AUDIENCE, "Invalid audience");
+        }
+
+        processingContext.setSecurityEventToken(securityEventToken);
+
+        // handle security event
+        sharedSignals.processSecurityEvents(processingContext);
 
         if (!processingContext.isProcessedSuccessfully()) {
             // See 2.3. Failure Response https://www.rfc-editor.org/rfc/rfc8935.html#section-2.3

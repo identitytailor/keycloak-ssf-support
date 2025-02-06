@@ -34,7 +34,7 @@ public class SecurityEventPollingResponseDeserializer extends JsonDeserializer<M
 
             SecurityEventToken eventToken;
             try {
-                eventToken = provider.parse(jwtString);
+                eventToken = provider.parseSecurityEventToken(jwtString, /*processingContext*/ null);
             } catch (SharedSignalsParsingException parsingException) {
                 eventToken = new ErrorSecurityEventToken(SharedSignalsFailureResponse.ERROR_AUTHENTICATION_FAILED, parsingException.getMessage());
             }

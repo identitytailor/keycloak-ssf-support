@@ -1,6 +1,8 @@
 package com.identitytailor.keycloak.ssf.receiver;
 
 import com.identitytailor.keycloak.ssf.SharedSignalsProvider;
+import com.identitytailor.keycloak.ssf.event.SecurityEventToken;
+import com.identitytailor.keycloak.ssf.event.types.SecurityEvent;
 import com.identitytailor.keycloak.ssf.keys.TransmitterKeyManager;
 import com.identitytailor.keycloak.ssf.receiver.transmitterclient.TransmitterClient;
 import com.identitytailor.keycloak.ssf.receiver.verification.VerificationState;
@@ -68,6 +70,7 @@ public class DefaultSharedSignalsReceiver implements SharedSignalsReceiver {
             key.setKid(receiverKey.getKid());
             key.setAlgorithm(receiverKey.getAlgorithm());
             key.setUse(receiverKey.getKeyUse());
+            key.setType(receiverKey.getType());
             key.setPublicKey(publicKey);
             return key;
         });

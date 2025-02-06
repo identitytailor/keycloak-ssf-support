@@ -22,8 +22,7 @@ public class SecurityEventToken extends JsonWebToken {
     protected String txn;
 
     @JsonProperty("events")
-    @JsonDeserialize(using = SecurityEventMapJsonDeserializer.class)
-    protected Map<String, SecurityEvent> events;
+    protected Map<String, Map<String,Object>> events;
 
     public SecurityEventToken txn(String txn) {
         setTxn(txn);
@@ -43,14 +42,14 @@ public class SecurityEventToken extends JsonWebToken {
         return this;
     }
 
-    public Map<String, SecurityEvent> getEvents() {
+    public Map<String, Map<String,Object>> getEvents() {
         if (events == null) {
             events = new LinkedHashMap<>();
         }
         return events;
     }
 
-    public void setEvents(Map<String, SecurityEvent> events) {
+    public void setEvents(Map<String, Map<String,Object>> events) {
         this.events = events;
     }
 

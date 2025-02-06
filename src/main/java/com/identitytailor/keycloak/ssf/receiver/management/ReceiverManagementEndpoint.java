@@ -2,6 +2,7 @@ package com.identitytailor.keycloak.ssf.receiver.management;
 
 import com.identitytailor.keycloak.ssf.receiver.ReceiverConfig;
 import com.identitytailor.keycloak.ssf.receiver.ReceiverModel;
+import com.identitytailor.keycloak.ssf.receiver.streamclient.SharedSignalsStreamException;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -11,6 +12,8 @@ import org.keycloak.models.KeycloakSession;
 
 import java.util.List;
 import java.util.Map;
+
+import static com.identitytailor.keycloak.ssf.receiver.util.SharedSignalsResponseUtil.newSharedSignalFailureResponse;
 
 @JBossLog
 public class ReceiverManagementEndpoint {
@@ -33,7 +36,14 @@ public class ReceiverManagementEndpoint {
     @Path("/receivers/{receiverAlias}")
     public Response updateReceiverConfig(@PathParam("receiverAlias") String alias, ReceiverConfig config) {
 
-        ReceiverModel receiverModel = receiverManager.createOrUpdateReceiver(session.getContext(), alias, config);
+        ReceiverModel receiverModel;
+        try {
+            receiverModel = receiverManager.createOrUpdateReceiver(session.getContext(), alias, config);
+        } catch (SharedSignalsStreamException ssse) {
+            throw newSharedSignalFailureResponse(ssse.getStatus(), ssse.getStatus().getReasonPhrase(), "Could not update receiver config: "+ ssse.getMessage());
+        } catch (Exception e) {
+            throw newSharedSignalFailureResponse(Response.Status.INTERNAL_SERVER_ERROR, Response.Status.INTERNAL_SERVER_ERROR.getReasonPhrase(), "Could not update receiver config: " + e.getMessage());
+        }
 
         return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(modelToRep(receiverModel)).build();
     }

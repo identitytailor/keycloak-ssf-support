@@ -18,8 +18,8 @@ public class SecurityEventPollingResponse {
      * A JSON object containing zero or more SETs being returned. Each member name is the jti of a SET to be delivered, and its value is a JSON string representing the corresponding SET. If there are no outstanding SETs to be transmitted, the JSON object SHALL be empty. Note that both SETs being transmitted for the first time and SETs that are being retransmitted after not having been acknowledged are communicated here.
      */
     @JsonProperty("sets")
-    @JsonDeserialize(using = SecurityEventPollingResponseDeserializer.class)
-    protected Map<String, SecurityEventToken> sets;
+    // @JsonDeserialize(using = SecurityEventPollingResponseDeserializer.class)
+    protected Map<String, String> sets;
 
     /**
      * A JSON boolean value that indicates if more unacknowledged SETs are available to be returned. This member MAY be omitted, with the meaning being the same as including it with the boolean value false.
@@ -30,11 +30,11 @@ public class SecurityEventPollingResponse {
     @JsonIgnore
     protected Map<String, Object> attributes = new HashMap<String, Object>();
 
-    public Map<String, SecurityEventToken> getSets() {
+    public Map<String, String> getSets() {
         return sets;
     }
 
-    public void setSets(Map<String, SecurityEventToken> sets) {
+    public void setSets(Map<String, String> sets) {
         this.sets = sets;
     }
 

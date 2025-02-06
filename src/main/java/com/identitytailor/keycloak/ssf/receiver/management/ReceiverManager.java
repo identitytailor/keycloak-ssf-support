@@ -136,6 +136,7 @@ public class ReceiverManager {
         receiverKeyModel.setKid(key.getKid());
         receiverKeyModel.setAlgorithm(key.getAlgorithm());
         receiverKeyModel.setKeyUse(key.getUse());
+        receiverKeyModel.setType(key.getType());
 
         // store public key
         String encodedPublicKey = Base64.getEncoder().encodeToString(key.getPublicKey().getEncoded());
@@ -177,7 +178,7 @@ public class ReceiverManager {
         }
     }
 
-    protected SharedSignalsReceiver lookupReceiver(KeycloakContext context, String receiverAlias) {
+    public SharedSignalsReceiver lookupReceiver(KeycloakContext context, String receiverAlias) {
 
         ReceiverModel receiverModel = getReceiverModel(context, receiverAlias);
         if (receiverModel == null) {
@@ -186,7 +187,7 @@ public class ReceiverManager {
         return lookupReceiver(receiverModel);
     }
 
-    protected SharedSignalsReceiver lookupReceiver(ReceiverModel receiverModel) {
+    public SharedSignalsReceiver lookupReceiver(ReceiverModel receiverModel) {
 
         KeycloakSessionFactory ksf = session.getKeycloakSessionFactory();
         SharedSignalsReceiverFactory receiverFactory = (SharedSignalsReceiverFactory) ksf.getProviderFactory(SharedSignalsReceiver.class);

@@ -42,4 +42,12 @@ public class ReceiverKeyModel extends ComponentModel {
     public void setPublicKey(String publicKey) {
         getConfig().putSingle("publicKey",publicKey);
     }
+
+    public String getType() {
+        return getConfig().getFirst("type");
+    }
+
+    public void setType(String type) {
+        getConfig().putSingle("type",type);
+    }
 }

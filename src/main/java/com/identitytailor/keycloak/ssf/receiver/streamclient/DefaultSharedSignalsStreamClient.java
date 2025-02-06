@@ -3,6 +3,7 @@ package com.identitytailor.keycloak.ssf.receiver.streamclient;
 import com.identitytailor.keycloak.ssf.streams.model.CreateStreamRequest;
 import com.identitytailor.keycloak.ssf.streams.model.SharedSignalsStreamRepresentation;
 import com.identitytailor.keycloak.ssf.transmitter.SharedSignalsTransmitterMetadata;
+import jakarta.ws.rs.core.Response;
 import lombok.extern.jbosslog.JBossLog;
 import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.models.KeycloakSession;
@@ -39,12 +40,12 @@ public class DefaultSharedSignalsStreamClient implements SharedSignalsStreamClie
 
             if (response.getStatus() != 201) {
                 log.errorf("Stream creation failed. %s", response.asJson(Map.class));
-                throw new SharedSignalsStreamException("Expected a 201 response but got: " + response.getStatus());
+                throw new SharedSignalsStreamException("Expected a 201 response but got: " + response.getStatus(), Response.Status.fromStatusCode(response.getStatus()));
             }
 
             return response.asJson(SharedSignalsStreamRepresentation.class);
-        } catch (Exception e) {
-            throw new SharedSignalsStreamException("Could not send stream creation request", e);
+        } catch (IOException ioe) {
+            throw new SharedSignalsStreamException("I/O error during stream creation", ioe, Response.Status.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -61,10 +62,10 @@ public class DefaultSharedSignalsStreamClient implements SharedSignalsStreamClie
 
             if (response.getStatus() != 204) {
                 log.errorf("Stream deletion failed. realm=%s stream_id=%s error='%s'", realm.getName(), streamId, response.asJson(Map.class));
-                throw new SharedSignalsStreamException("Expected a 204 response but got: " + response.getStatus());
+                throw new SharedSignalsStreamException("Expected a 204 response but got: " + response.getStatus(), Response.Status.fromStatusCode(response.getStatus()));
             }
         } catch (Exception e) {
-            throw new SharedSignalsStreamException("Could not send stream deletion request", e);
+            throw new SharedSignalsStreamException("Could not send stream deletion request", e, Response.Status.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -81,12 +82,12 @@ public class DefaultSharedSignalsStreamClient implements SharedSignalsStreamClie
 
             if (response.getStatus() != 200) {
                 log.errorf("Stream read request failed. realm=%s stream_id=%s error='%s'", realm.getName(), streamId, response.asJson(Map.class));
-                throw new SharedSignalsStreamException("Expected a 200 response but got: " + response.getStatus());
+                throw new SharedSignalsStreamException("Expected a 200 response but got: " + response.getStatus(), Response.Status.fromStatusCode(response.getStatus()));
             }
 
             return response.asJson(SharedSignalsStreamRepresentation.class);
         } catch (Exception e) {
-            throw new SharedSignalsStreamException("Could not send stream read request", e);
+            throw new SharedSignalsStreamException("Could not send stream read request", e, Response.Status.INTERNAL_SERVER_ERROR);
         }
     }
 

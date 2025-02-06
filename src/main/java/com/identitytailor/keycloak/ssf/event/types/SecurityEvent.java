@@ -104,4 +104,11 @@ public abstract class SecurityEvent {
         attributes.put(key, value);
     }
 
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
+    }
+
+    public void setSubjectId(SubjectId subjectId) {
+        this.subjectId = subjectId;
+    }
 }

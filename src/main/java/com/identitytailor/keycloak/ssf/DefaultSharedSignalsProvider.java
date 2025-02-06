@@ -69,7 +69,7 @@ public class DefaultSharedSignalsProvider implements SharedSignalsProvider {
 
     protected SecurityEventParser getSecurityEventParser() {
         if (securityEventParser == null) {
-            securityEventParser = new DefaultSecurityEventParser(session, this);
+            securityEventParser = new DefaultSecurityEventParser(session);
         }
         return securityEventParser;
     }
@@ -77,6 +77,7 @@ public class DefaultSharedSignalsProvider implements SharedSignalsProvider {
     protected SecurityEventProcessor getSecurityEventProcessor() {
         if (securityEventProcessor == null) {
             securityEventProcessor = new DefaultSecurityEventProcessor(
+                    this,
                     getSecurityEventListener(),
                     getSharedSignalsStore()
             );
@@ -148,9 +149,9 @@ public class DefaultSharedSignalsProvider implements SharedSignalsProvider {
     }
 
     @Override
-    public SecurityEventToken parse(String encodedSecurityEventToken) {
+    public SecurityEventToken parseSecurityEventToken(String encodedSecurityEventToken, SecurityEventProcessingContext processingContext) {
         var parser = getSecurityEventParser();
-        return parser.parse(encodedSecurityEventToken);
+        return parser.parseSecurityEventToken(encodedSecurityEventToken, processingContext.getReceiver());
     }
 
     @Override
@@ -228,6 +229,8 @@ public class DefaultSharedSignalsProvider implements SharedSignalsProvider {
         context.setSecurityEventToken(securityEventToken);
         context.setReceiverAlias(receiverAlias);
         context.setSession(session);
+        SharedSignalsReceiver receiver = getReceiverManager().lookupReceiver(session.getContext(), receiverAlias);
+        context.setReceiver(receiver);
         return context;
     }
 

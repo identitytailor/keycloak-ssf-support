@@ -5,7 +5,6 @@ import com.identitytailor.keycloak.ssf.event.ErrorSecurityEventToken;
 import com.identitytailor.keycloak.ssf.event.SecurityEventToken;
 import com.identitytailor.keycloak.ssf.event.processor.SecurityEventProcessingContext;
 import com.identitytailor.keycloak.ssf.receiver.ReceiverModel;
-import com.identitytailor.keycloak.ssf.receiver.SharedSignalsHacks;
 import lombok.extern.jbosslog.JBossLog;
 import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.common.util.CollectionUtil;
@@ -42,7 +41,6 @@ public class DefaultSharedSignalsStreamPoller implements SharedSignalsStreamPoll
         log.tracef("Sending polling request. %s", pollingRequest);
         SimpleHttp pollingHttp = preparePollingHttpClient(pollingRequest, receiverModel);
 
-        session.setAttribute(SharedSignalsHacks.RECEIVER_MODEL_SESSION_ATTRIBUTE, receiverModel);
         try (var response = pollingHttp.asResponse()) {
             log.tracef("Received polling response. status=%s", response.getStatus());
             if (response.getStatus() == 200) {
@@ -54,8 +52,6 @@ public class DefaultSharedSignalsStreamPoller implements SharedSignalsStreamPoll
             }
         } catch (IOException e) {
             log.warnf(e, "Failed to fetch events from polling endpoint. %s", pollingRequest);
-        } finally {
-            session.removeAttribute(SharedSignalsHacks.RECEIVER_MODEL_SESSION_ATTRIBUTE);
         }
 
         if (!config.isAcknowledgeImmediately()) {
@@ -75,7 +71,6 @@ public class DefaultSharedSignalsStreamPoller implements SharedSignalsStreamPoll
         SecurityEventPollingRequest ackOnlyRequest = createAckOnlyRequest(pollingPolicy, pollingContext.getSecurityEventIdsToAcknowledge());
         SimpleHttp pollingHttp = preparePollingHttpClient(ackOnlyRequest, receiverModel);
 
-        session.setAttribute(SharedSignalsHacks.RECEIVER_MODEL_SESSION_ATTRIBUTE, receiverModel);
         try (var response = pollingHttp.asResponse()) {
             log.tracef("Received acknowledge response. status=%s", response.getStatus());
             SecurityEventPollingResponse pollingResponse = response.asJson(SecurityEventPollingResponse.class);
@@ -84,8 +79,6 @@ public class DefaultSharedSignalsStreamPoller implements SharedSignalsStreamPoll
             }
         } catch (IOException e) {
             log.warnf(e, "Failed to acknowledge events from polling endpoint. %s", pollingRequest);
-        } finally {
-            session.removeAttribute(SharedSignalsHacks.RECEIVER_MODEL_SESSION_ATTRIBUTE);
         }
     }
 
@@ -110,16 +103,23 @@ public class DefaultSharedSignalsStreamPoller implements SharedSignalsStreamPoll
     protected void processPollingResponse(RealmModel realm, SecurityEventPollingContext pollingContext, SecurityEventPollingRequest pollingRequest, SecurityEventPollingResponse
             pollingResponse, SharedSignalsProvider sharedSignals, ReceiverModel receiverModel) {
 
-        Map<String, SecurityEventToken> sets = pollingResponse.getSets();
+        Map<String, String> sets = pollingResponse.getSets();
         if (sets == null || sets.isEmpty()) {
             log.tracef("No SETs found.");
             return;
         }
 
+        SecurityEventProcessingContext processingContext = sharedSignals.createSecurityEventProcessingContext(null, receiverModel.getAlias());
+
         log.tracef("%s SETs found.", sets.size());
         for (var setEntry : sets.entrySet()) {
-            SecurityEventToken securityEventToken = setEntry.getValue();
-            processSecurityEventToken(pollingContext, sharedSignals, receiverModel, securityEventToken);
+            String jti = setEntry.getKey();
+            String encodedSet = setEntry.getValue();
+            SecurityEventToken securityEventToken = sharedSignals.parseSecurityEventToken(encodedSet, processingContext);
+            securityEventToken.setId(jti);
+
+            processingContext.setSecurityEventToken(securityEventToken);
+            processSecurityEventToken(pollingContext, sharedSignals, securityEventToken, processingContext);
         }
 
         if (CollectionUtil.isNotEmpty(pollingRequest.getAck())) {
@@ -128,9 +128,8 @@ public class DefaultSharedSignalsStreamPoller implements SharedSignalsStreamPoll
     }
 
     protected void processSecurityEventToken(SecurityEventPollingContext pollingContext, SharedSignalsProvider
-            provider, ReceiverModel receiverModel, SecurityEventToken securityEventToken) {
+            provider, SecurityEventToken securityEventToken, SecurityEventProcessingContext processingContext) {
 
-        SecurityEventProcessingContext processingContext = provider.createSecurityEventProcessingContext(securityEventToken, receiverModel.getAlias());
         try {
             provider.processSecurityEvents(processingContext);
         } catch (Exception e) {
