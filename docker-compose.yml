@@ -1,0 +1,84 @@
+services:
+
+  keycloak-db:
+    image: postgres:15.7
+    environment:
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+      POSTGRES_DB: keycloak
+    command:
+      # Certificates are added in the Dockerfile with the proper permissions for postgresql
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "pg_stat_statements.track=all"
+      - "-c"
+      - "max_connections=200"
+    ports:
+      - "45432:5432"
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data:z
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.8
+
+    environment:
+      
+      # Keycloak Admin User
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      
+      # Feature config, see: https://www.keycloak.org/server/features
+      KC_FEATURES: preview
+      
+      # Disable specific features
+      #      KC_FEATURES_DISABLED: "device-flow"
+      
+      # Logging, see: https://www.keycloak.org/server/logging
+      KC_LOG_LEVEL: INFO,com.identitytailor.keycloak:debug
+
+      KC_HTTP_RELATIVE_PATH: "auth"
+
+      KC_DB: postgres
+      # See postgres JDBC URL parameters: https://jdbc.postgresql.org/documentation/head/connect.html
+      KC_DB_URL_PROPERTIES: "?ApplicationName=keycloak"
+      KC_DB_URL_HOST: keycloak-db
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KC_DB_SCHEMA: public
+
+      # Additional JVM options
+      JAVA_OPTS_APPEND: "--show-version"
+      # Remote Debugging
+      DEBUG: "true"
+      DEBUG_PORT: "*:8787"
+
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+      - "8787:8787"
+      - "9000:9000"
+
+    volumes:
+      # Add additional extensions (extensions.jar already contained in image)
+      - ./target/keycloak-ssf-support.jar:/opt/keycloak/providers/keycloak-ssf-support.jar:z
+
+      # Keycloak h2 database
+      - ./scratch/data:/opt/keycloak/data:z
+
+    command:
+      - "--verbose"
+      - "start-dev"
+
+volumes:
+  keycloak-data:
+    name: keycloak-ssf-data
+  keycloak-db-data:
+    name: keycloak-db-ssf-data

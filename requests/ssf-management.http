@@ -1,0 +1,65 @@
+### List receiver
+GET {{issuer}}/ssf/management/receivers
+
+### Get receiver
+GET {{issuer}}/ssf/management/receivers/{{caepAlias}}
+
+### Register receiver with managed stream (POLL)
+PUT {{issuer}}/ssf/management/receivers/{{caepAlias}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "description": "Keycloak Demo Receiver",
+  "transmitterUrl": "https://ssf.caep.dev",
+  "transmitterAccessToken": "{{caepDevToken}}",
+  "deliveryMethod": "urn:ietf:rfc:8936",
+  "managedStream": true,
+  "pollIntervalSeconds": 10,
+  "eventsRequested": [
+    "https://schemas.openid.net/secevent/caep/event-type/session-revoked",
+    "https://schemas.openid.net/secevent/caep/event-type/token-claims-change",
+    "https://schemas.openid.net/secevent/caep/event-type/assurance-level-change",
+    "https://schemas.openid.net/secevent/caep/event-type/device-compliance-change",
+    "https://schemas.openid.net/secevent/caep/event-type/credential-change"
+  ],
+  "pushAuthorizationToken": "dummyPushToken"
+}
+
+### Register receiver with unmanaged stream (POLL)
+PUT {{issuer}}/ssf/management/receivers/{{caepAlias}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "transmitterUrl": "https://ssf.caep.dev",
+  "transmitterAccessToken": "{{caepDevToken}}",
+  "streamId": "30682283-bf37-4916-bf73-6cc3b51b0e51",
+  "managedStream": false,
+  "pollIntervalSeconds": 10
+}
+
+### Register receiver with unmanaged stream (PUSH)
+PUT {{issuer}}/ssf/management/receivers/{{caepAlias}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "transmitterUrl": "https://ssf.caep.dev",
+  "transmitterAccessToken": "{{caepDevToken}}",
+  "streamId": "ac974aca-c6e5-494e-bda0-80a470d17dd9",
+  "managedStream": false
+}
+
+
+### Remove receiver
+DELETE {{issuer}}/ssf/management/receivers/{{caepAlias}}
+Accept: application/json
+
+### Refresh receiver
+POST {{issuer}}/ssf/management/receivers/{{caepAlias}}/refresh
+Accept: application/json
+
+### Trigger verification
+POST {{issuer}}/ssf/management/receivers/{{caepAlias}}/verify
+Accept: application/json
