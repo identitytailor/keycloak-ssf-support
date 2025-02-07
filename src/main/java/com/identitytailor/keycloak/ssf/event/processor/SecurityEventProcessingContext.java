@@ -8,8 +8,6 @@ public class SecurityEventProcessingContext {
 
     protected KeycloakSession session;
 
-    protected String receiverAlias;
-
     protected SharedSignalsReceiver receiver;
 
     protected SecurityEventToken securityEventToken;
@@ -38,14 +36,6 @@ public class SecurityEventProcessingContext {
 
     public void setSession(KeycloakSession session) {
         this.session = session;
-    }
-
-    public String getReceiverAlias() {
-        return receiverAlias;
-    }
-
-    public void setReceiverAlias(String receiverAlias) {
-        this.receiverAlias = receiverAlias;
     }
 
     public SharedSignalsReceiver getReceiver() {

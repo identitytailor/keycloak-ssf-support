@@ -3,7 +3,6 @@ package com.identitytailor.keycloak.ssf.event.parser;
 import com.identitytailor.keycloak.ssf.event.SecurityEventToken;
 import com.identitytailor.keycloak.ssf.receiver.SharedSignalsReceiver;
 import lombok.extern.jbosslog.JBossLog;
-import org.keycloak.Token;
 import org.keycloak.crypto.KeyWrapper;
 import org.keycloak.crypto.SignatureProvider;
 import org.keycloak.jose.jws.JWSHeader;
@@ -26,27 +25,30 @@ public class DefaultSecurityEventParser implements SecurityEventParser {
 
         try {
             // custom decode method to use keys from ReceiverComponent
-            // var securityEventToken_ = session.tokens().decode(encodedSecurityEventToken, SecurityEventToken.class);
-            var securityEventToken = decode(encodedSecurityEventToken, SecurityEventToken.class, receiver);
+            var securityEventToken = decode(encodedSecurityEventToken, receiver);
             return securityEventToken;
         } catch (Exception e) {
             throw new SharedSignalsParsingException("Could not parse security event token", e);
         }
     }
 
-    public <T extends Token> T decode(String token, Class<T> clazz, SharedSignalsReceiver receiver) {
-        if (token == null) {
+    protected SecurityEventToken decode(String encodedSecurityEventToken, SharedSignalsReceiver receiver) {
+
+        if (encodedSecurityEventToken == null) {
             return null;
         }
 
         try {
-            JWSInput jws = new JWSInput(token);
+            JWSInput jws = new JWSInput(encodedSecurityEventToken);
             JWSHeader header = jws.getHeader();
             String kid = header.getKeyId();
             String alg = header.getRawAlgorithm();
 
             // TODO select key on algorithm
-            KeyWrapper key = receiver.getKeys().filter(kw -> kw.getKid().equals(kid)).findFirst().orElse(null);
+            KeyWrapper key = receiver.getKeys()
+                    .filter(kw -> kw.getKid().equals(kid) && kw.getAlgorithm().equals(alg))
+                    .findFirst()
+                    .orElse(null);
             if (key == null) {
                 throw new SharedSignalsParsingException("Could not find key with kid " + kid);
             }
@@ -56,8 +58,10 @@ public class DefaultSecurityEventParser implements SecurityEventParser {
                 throw new SharedSignalsParsingException("Could not find verifier for alg " + alg);
             }
 
-            boolean valid = signatureProvider.verifier(key).verify(jws.getEncodedSignatureInput().getBytes(StandardCharsets.UTF_8), jws.getSignature());
-            return valid ? jws.readJsonContent(clazz) : null;
+            byte[] tokenBytes = jws.getEncodedSignatureInput().getBytes(StandardCharsets.UTF_8);
+            boolean valid = signatureProvider.verifier(key)
+                    .verify(tokenBytes, jws.getSignature());
+            return valid ? jws.readJsonContent(SecurityEventToken.class) : null;
         } catch (Exception e) {
             log.trace("Failed to decode token", e);
             return null;

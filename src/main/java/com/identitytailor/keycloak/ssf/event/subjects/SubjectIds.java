@@ -1,7 +1,4 @@
-package com.identitytailor.keycloak.ssf.event;
-
-import com.identitytailor.keycloak.ssf.event.subjects.*;
-import com.identitytailor.keycloak.ssf.event.types.caep.CaepEvent;
+package com.identitytailor.keycloak.ssf.event.subjects;
 
 import java.util.HashMap;
 import java.util.List;

@@ -79,13 +79,17 @@ public class SharedSignalsRealmResourceProvider implements RealmResourceProvider
         public void postInit(KeycloakSessionFactory keycloakSessionFactory) {
             keycloakSessionFactory.register(event -> {
                 if (event instanceof PostMigrationEvent) {
-                    new SharedSignalsStreamPollerBootstrap(keycloakSessionFactory).schedulePolling();
+                    bootstrapPolling(keycloakSessionFactory);
                 }
             });
         }
 
         @Override
         public void close() {
+        }
+
+        protected void bootstrapPolling(KeycloakSessionFactory keycloakSessionFactory) {
+            new SharedSignalsStreamPollerBootstrap(keycloakSessionFactory).schedulePolling();
         }
     }
 }

@@ -106,7 +106,7 @@ public class DefaultSecurityEventProcessor implements SecurityEventProcessor {
         VerificationState verificationState = getVerificationState(realm, receiverModel);
 
         String givenState = verificationEvent.getState();
-        String expectedState = verificationState.getState();
+        String expectedState = verificationState == null ? null : verificationState.getState();
 
         if (givenState.equals(expectedState)) {
             log.debugf("Verification successful!. %s", jti);
@@ -115,7 +115,7 @@ public class DefaultSecurityEventProcessor implements SecurityEventProcessor {
         }
 
         log.warnf("Verification failed. %s", jti);
-        return false;
+        throw new SharedSignalsStreamVerificationException("Verification state mismatch.");
     }
 
     protected VerificationState getVerificationState(RealmModel realm, ReceiverModel receiverModel) {
@@ -127,6 +127,7 @@ public class DefaultSecurityEventProcessor implements SecurityEventProcessor {
 
         String streamId = null;
 
+        // See: https://openid.net/specs/openid-sharedsignals-framework-1_0.html#section-7.1.4.1
         // try to extract subjectId from securityEvent
         SubjectId subjectId = securityEvent.getSubjectId();
         if (subjectId instanceof OpaqueSubjectId opaqueSubjectId) {
@@ -134,7 +135,7 @@ public class DefaultSecurityEventProcessor implements SecurityEventProcessor {
         }
 
         if (streamId == null) {
-            // try to extract subjectId from securityEventToken
+            // as a fallback, try to extract subjectId from securityEventToken
             subjectId = processingContext.getSecurityEventToken().getSubjectId();
             if (subjectId instanceof OpaqueSubjectId opaqueSubjectId) {
                 streamId = opaqueSubjectId.getId();

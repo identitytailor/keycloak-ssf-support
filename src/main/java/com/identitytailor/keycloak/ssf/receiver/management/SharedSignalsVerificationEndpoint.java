@@ -15,9 +15,10 @@ import static com.identitytailor.keycloak.ssf.receiver.util.SharedSignalsRespons
 @JBossLog
 public class SharedSignalsVerificationEndpoint {
 
-    private final KeycloakSession session;
+    protected final KeycloakSession session;
 
-    private final ReceiverManager receiverManager;
+    protected final ReceiverManager receiverManager;
+
     protected final String receiverAlias;
 
     public SharedSignalsVerificationEndpoint(KeycloakSession session, ReceiverManager receiverManager, String receiverAlias) {
@@ -36,6 +37,8 @@ public class SharedSignalsVerificationEndpoint {
         }
 
         SharedSignalsReceiver receiver = receiverManager.lookupReceiver(receiverModel);
+
+        // TODO reject pending verification
 
         try {
             receiver.requestVerification();

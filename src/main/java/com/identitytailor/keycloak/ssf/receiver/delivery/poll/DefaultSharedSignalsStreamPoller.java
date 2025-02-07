@@ -5,6 +5,7 @@ import com.identitytailor.keycloak.ssf.event.ErrorSecurityEventToken;
 import com.identitytailor.keycloak.ssf.event.SecurityEventToken;
 import com.identitytailor.keycloak.ssf.event.processor.SecurityEventProcessingContext;
 import com.identitytailor.keycloak.ssf.receiver.ReceiverModel;
+import com.identitytailor.keycloak.ssf.receiver.verification.SharedSignalsStreamVerificationException;
 import lombok.extern.jbosslog.JBossLog;
 import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.common.util.CollectionUtil;
@@ -132,6 +133,12 @@ public class DefaultSharedSignalsStreamPoller implements SharedSignalsStreamPoll
 
         try {
             provider.processSecurityEvents(processingContext);
+        } catch(SharedSignalsStreamVerificationException sssve) {
+            log.warnf(sssve, "Failed to verify stream. %s", securityEventToken);
+            // use errorCode invalid_state, see: https://openid.net/specs/openid-sharedsignals-framework-1_0.html#section-7.1.4.1
+            var errorSecurityEventToken = new ErrorSecurityEventToken("invalid_state", sssve.getMessage());
+            errorSecurityEventToken.setId(securityEventToken.getId());
+            securityEventToken = errorSecurityEventToken;
         } catch (Exception e) {
             log.warnf(e, "Failed to process security event token. %s", securityEventToken);
             var errorSecurityEventToken = new ErrorSecurityEventToken("processing_error", e.getMessage());

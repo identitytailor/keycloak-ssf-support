@@ -227,7 +227,6 @@ public class DefaultSharedSignalsProvider implements SharedSignalsProvider {
     public SecurityEventProcessingContext createSecurityEventProcessingContext(SecurityEventToken securityEventToken, String receiverAlias) {
         SecurityEventProcessingContext context = new SecurityEventProcessingContext();
         context.setSecurityEventToken(securityEventToken);
-        context.setReceiverAlias(receiverAlias);
         context.setSession(session);
         SharedSignalsReceiver receiver = getReceiverManager().lookupReceiver(session.getContext(), receiverAlias);
         context.setReceiver(receiver);

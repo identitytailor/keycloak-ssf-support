@@ -1,12 +1,9 @@
 package com.identitytailor.keycloak.ssf.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.identitytailor.keycloak.ssf.event.subjects.SubjectIdJsonDeserializer;
-import com.identitytailor.keycloak.ssf.event.types.SecurityEvent;
-import com.identitytailor.keycloak.ssf.event.types.SecurityEventMapJsonDeserializer;
 import com.identitytailor.keycloak.ssf.event.subjects.SubjectId;
+import com.identitytailor.keycloak.ssf.event.subjects.SubjectIdJsonDeserializer;
 import org.keycloak.representations.JsonWebToken;
 
 import java.util.LinkedHashMap;
