@@ -4,7 +4,7 @@ import com.identitytailor.keycloak.ssf.SharedSignalsFailureResponse;
 
 public class ErrorSecurityEventToken extends SecurityEventToken {
 
-    protected SharedSignalsFailureResponse failureResponse;
+    protected final SharedSignalsFailureResponse failureResponse;
 
     public ErrorSecurityEventToken(String errorCode, String message) {
         this.failureResponse = new SharedSignalsFailureResponse(errorCode, message);

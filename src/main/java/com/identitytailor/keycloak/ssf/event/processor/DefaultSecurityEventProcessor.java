@@ -99,7 +99,7 @@ public class DefaultSecurityEventProcessor implements SecurityEventProcessor {
         ReceiverModel receiverModel = processingContext.getReceiver().getReceiverModel();
 
         if (!receiverModel.getStreamId().equals(streamId)) {
-            log.debugf("Verification failed! StreamId missmatch. jti=%s expectedStreamId=%s actualStreamId=%s", jti, receiverModel.getStreamId(), streamId);
+            log.debugf("Verification failed! StreamId mismatch. jti=%s expectedStreamId=%s actualStreamId=%s", jti, receiverModel.getStreamId(), streamId);
             return false;
         }
 

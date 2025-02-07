@@ -28,7 +28,7 @@ public abstract class AbstractDeliveryMethodRepresentation {
     /**
      * authorization_header
      *
-     * The HTTP Authorization header that the Transmitter MUST set with each event delivery, if the configuration is present. The value is optional and it is set by the Receiver.
+     * The HTTP Authorization header that the Transmitter MUST set with each event delivery, if the configuration is present. The value is optional, and it is set by the Receiver.
      */
     @JsonProperty("authorization_header")
     private String authorizationHeader;

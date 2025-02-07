@@ -1,7 +1,7 @@
 package com.identitytailor.keycloak.ssf.event.types.risc;
 
 /**
- * Opt Out Cancelled signals that the account identified by the subject cancelled the opt out from RISC event exchanges. The account is in the opt-in state.
+ * Opt Out Cancelled signals that the account identified by the subject cancelled the opt-out from RISC event exchanges. The account is in the opt-in state.
  */
 public class OptOutCancelled extends RiscEvent {
 

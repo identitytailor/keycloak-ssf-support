@@ -20,7 +20,7 @@ public class SessionPresented extends CaepEvent {
     public static final String TYPE = "https://schemas.openid.net/secevent/caep/event-type/session-presented";
 
     /**
-     * The array of IP addresses of the user as observed by the Transmitter. The value MUST be in the format of an array of strings, each one of which represents the RFC 4001 [RFC4001] string represetation of an IP address. (NOTE, this can be different from the one observed by the Receiver for the same user because of network translation).
+     * The array of IP addresses of the user as observed by the Transmitter. The value MUST be in the format of an array of strings, each one of which represents the RFC 4001 [RFC4001] string representation of an IP address. (NOTE, this can be different from the one observed by the Receiver for the same user because of network translation).
      */
     @JsonProperty("ips")
     protected Set<String> ips;

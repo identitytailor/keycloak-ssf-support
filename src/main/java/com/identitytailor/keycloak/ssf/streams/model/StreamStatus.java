@@ -15,5 +15,5 @@ public enum StreamStatus {
     /**
      * The Transmitter MUST NOT transmit events over the stream and will not hold any events for later transmission.
      */
-    disabled;
+    disabled
 }

@@ -70,7 +70,7 @@ public class ReceiverManagementEndpoint {
 
     @DELETE
     @Path("/receivers/{receiverAlias}")
-    public Response deleteReceiverConfig(@PathParam("receiverAlias") String alias) throws Exception {
+    public Response deleteReceiverConfig(@PathParam("receiverAlias") String alias) {
 
         KeycloakContext context = session.getContext();
         ReceiverModel receiverModel = receiverManager.getReceiverModel(context, alias);

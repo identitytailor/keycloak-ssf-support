@@ -48,7 +48,7 @@ public class SharedSignalsTransmitterMetadata {
     private List<Object> authorizationSchemes;
 
     @JsonIgnore
-    private Map<String, Object> metadata = new HashMap<String, Object>();
+    private final Map<String, Object> metadata = new HashMap<String, Object>();
 
     public String getSpecVersion() {
         return specVersion;

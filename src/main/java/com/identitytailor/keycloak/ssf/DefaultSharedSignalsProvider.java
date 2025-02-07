@@ -218,8 +218,7 @@ public class DefaultSharedSignalsProvider implements SharedSignalsProvider {
                 .setParameter("configValue", DeliveryMethod.POLL.name())
                 .setParameter("providerType", SharedSignalsReceiver.class.getName());
 
-        Set<String> realmIds = new HashSet<>();
-        realmIds.addAll(query.getResultList());
+        Set<String> realmIds = new HashSet<>(query.getResultList());
         return realmIds;
     }
 

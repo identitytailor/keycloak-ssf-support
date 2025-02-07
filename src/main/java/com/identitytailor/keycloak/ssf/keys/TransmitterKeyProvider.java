@@ -14,13 +14,7 @@ import java.util.stream.Stream;
 @JBossLog
 public class TransmitterKeyProvider implements KeyProvider {
 
-    private final KeycloakSession session;
-
-    private final ComponentModel model;
-
     public TransmitterKeyProvider(KeycloakSession session, ComponentModel model) {
-        this.session = session;
-        this.model = model;
     }
 
     @Override
