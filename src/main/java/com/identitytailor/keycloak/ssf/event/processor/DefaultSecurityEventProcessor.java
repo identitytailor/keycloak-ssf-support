@@ -9,6 +9,7 @@ import com.identitytailor.keycloak.ssf.event.parser.SharedSignalsParsingExceptio
 import com.identitytailor.keycloak.ssf.event.subjects.OpaqueSubjectId;
 import com.identitytailor.keycloak.ssf.event.subjects.SubjectId;
 import com.identitytailor.keycloak.ssf.event.types.SecurityEvent;
+import com.identitytailor.keycloak.ssf.event.types.StreamUpdatedEvent;
 import com.identitytailor.keycloak.ssf.event.types.VerificationEvent;
 import com.identitytailor.keycloak.ssf.receiver.ReceiverModel;
 import com.identitytailor.keycloak.ssf.receiver.verification.SharedSignalsStreamVerificationException;
@@ -57,6 +58,11 @@ public class DefaultSecurityEventProcessor implements SecurityEventProcessor {
                     }
 
                     if (handleVerificationEvent(processingContext, verificationEvent, jti)) {
+                        break;
+                    }
+                } else if (securityEvent instanceof StreamUpdatedEvent streamUpdatedEvent) {
+
+                    if (handleStreamUpdatedEvent(processingContext, streamUpdatedEvent, jti)) {
                         break;
                     }
                 } else {
@@ -117,6 +123,19 @@ public class DefaultSecurityEventProcessor implements SecurityEventProcessor {
         log.warnf("Verification failed. %s", jti);
         throw new SharedSignalsStreamVerificationException("Verification state mismatch.");
     }
+
+    protected boolean handleStreamUpdatedEvent(SecurityEventProcessingContext processingContext, StreamUpdatedEvent streamUpdatedEvent, String jti) {
+
+        KeycloakContext keycloakContext = processingContext.getSession().getContext();
+        RealmModel realm = keycloakContext.getRealm();
+
+        OpaqueSubjectId opaqueSubjectId = (OpaqueSubjectId) processingContext.getSecurityEventToken().getSubjectId();
+
+        log.debugf("Handling stream updated event. realm=%s jti=%s streamId=%s newStatus=%s", realm.getName(), jti, opaqueSubjectId.getId(), streamUpdatedEvent.getStatus());
+
+        return false;
+    }
+
 
     protected VerificationState getVerificationState(RealmModel realm, ReceiverModel receiverModel) {
         return sharedSignalsStore.getVerificationState(realm, receiverModel);
