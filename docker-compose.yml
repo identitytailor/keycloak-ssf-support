@@ -61,10 +61,13 @@ services:
       DEBUG_PORT: "*:8787"
 
     ports:
-      - "8080:8080"
-      - "8443:8443"
-      - "8787:8787"
-      - "9000:9000"
+      - "18080:8080"
+      - "18443:8443"
+      - "18787:8787"
+      - "19000:9000"
+
+    extra_hosts:
+      - "localhost.emobix.co.uk:${DOCKER_HOST_IP:-172.17.0.1}"
 
     volumes:
       # Add additional extensions (extensions.jar already contained in image)

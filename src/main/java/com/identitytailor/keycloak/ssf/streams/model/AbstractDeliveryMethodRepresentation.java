@@ -72,10 +72,10 @@ public abstract class AbstractDeliveryMethodRepresentation {
     }
 
     @JsonCreator
-    public static AbstractDeliveryMethodRepresentation create(@JsonProperty("method") DeliveryMethod method, @JsonProperty("endpoint_url") URI endpointUrl) {
+    public static AbstractDeliveryMethodRepresentation create(@JsonProperty("method") DeliveryMethod method, @JsonProperty("endpoint_url") URI endpointUrl, @JsonProperty("authorization_header") String authorizationHeader) {
         switch (method) {
             case PUSH:
-                return new PushDeliveryMethodRepresentation(endpointUrl);
+                return new PushDeliveryMethodRepresentation(endpointUrl, authorizationHeader);
             case POLL:
                 return new PollDeliveryMethodRepresentation(endpointUrl);
             default:

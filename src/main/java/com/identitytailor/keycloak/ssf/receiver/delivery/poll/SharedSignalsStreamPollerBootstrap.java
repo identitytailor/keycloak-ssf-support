@@ -67,7 +67,11 @@ public class SharedSignalsStreamPollerBootstrap {
                             config.setAcknowledgeImmediately(false);
 
                             log.tracef("Polling security events from receiver. realm=%s alias=%s", realm.getName(), receiverModel.getAlias());
-                            poller.pollEvents(pollingContext, config, realm, receiverModel);
+                            try {
+                                poller.pollEvents(pollingContext, config, realm, receiverModel);
+                            } catch (Exception e) {
+                                log.debugf(e, "Caught exception while processing polling realm %s", realm.getName());
+                            }
                         }
                     }
 

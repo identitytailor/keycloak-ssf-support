@@ -1,17 +1,17 @@
 ### Get SSF Metadata
-GET {{caepDevIssuer}}/.well-known/ssf-configuration
+GET {{transmitterIssuer}}/.well-known/ssf-configuration
 
 ### Get Stream
-GET {{caepDevIssuer}}/ssf/streams
-Authorization: Bearer {{caepDevToken}}
+GET {{transmitterIssuer}}/ssf/streams
+Authorization: Bearer {{transmitterToken}}
 
 > {%
     client.global.set("stream_id", response.body['stream_id'])
 %}
 
 ### Create Stream (Push)
-POST {{caepDevIssuer}}/ssf/streams
-Authorization: Bearer {{caepDevToken}}
+POST {{transmitterIssuer}}/ssf/streams
+Authorization: Bearer {{transmitterToken}}
 Content-Type: application/json
 
 {
@@ -35,8 +35,8 @@ Content-Type: application/json
 %}
 
 ### Create Stream (Poll)
-POST {{caepDevIssuer}}/ssf/streams
-Authorization: Bearer {{caepDevToken}}
+POST {{transmitterIssuer}}/ssf/streams
+Authorization: Bearer {{transmitterToken}}
 Content-Type: application/json
 
 {
@@ -58,8 +58,8 @@ Content-Type: application/json
 %}
 
 ### Trigger verification event
-POST {{caepDevIssuer}}/ssf/verify
-Authorization: Bearer {{caepDevToken}}
+POST {{transmitterIssuer}}/ssf/verify
+Authorization: Bearer {{transmitterToken}}
 Content-Type: application/json
 
 {
@@ -68,20 +68,20 @@ Content-Type: application/json
 }
 
 ### Delete Stream
-DELETE {{caepDevIssuer}}/ssf/streams?stream_id={{ stream_id }}
-Authorization: Bearer {{caepDevToken}}
+DELETE {{transmitterIssuer}}/ssf/streams?stream_id={{ stream_id }}
+Authorization: Bearer {{transmitterToken}}
 
 ### Poll events
-POST {{caepDevIssuer}}/ssf/streams/poll
-Authorization: Bearer {{caepDevToken}}
+POST {{transmitterIssuer}}/ssf/streams/poll
+Authorization: Bearer {{transmitterToken}}
 Content-Type: application/json
 Accept: application/json
 
 {"returnImmediately":true,"maxEvents":100}
 
 ### Acknowledge events
-POST {{caepDevIssuer}}/ssf/streams/poll
-Authorization: Bearer {{caepDevToken}}
+POST {{transmitterIssuer}}/ssf/streams/poll
+Authorization: Bearer {{transmitterToken}}
 Content-Type: application/json
 Accept: application/json
 

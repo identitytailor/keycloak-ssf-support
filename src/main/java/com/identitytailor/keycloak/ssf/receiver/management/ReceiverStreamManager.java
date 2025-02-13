@@ -57,7 +57,7 @@ public class ReceiverStreamManager {
             case POLL -> createStreamRequest.setDelivery(new PollDeliveryMethodRepresentation(null));
             case PUSH -> {
                 String pushUrl = createPushUrl(context, model);
-                createStreamRequest.setDelivery(new PushDeliveryMethodRepresentation(URI.create(pushUrl)));
+                createStreamRequest.setDelivery(new PushDeliveryMethodRepresentation(URI.create(pushUrl), model.getPushAuthorizationToken()));
             }
         }
 
@@ -66,7 +66,7 @@ public class ReceiverStreamManager {
 
     public String createPushUrl(KeycloakContext context, ReceiverModel model) {
         String issuer = Urls.realmIssuer(context.getUri().getBaseUri(), context.getRealm().getName());
-        String pushUrl = issuer + "/ssf/receiver/" + model.getAlias() + "/push";
+        String pushUrl = issuer + "/ssf/push/" + model.getAlias();
         return pushUrl;
     }
 

@@ -53,19 +53,24 @@ public class ReceiverManager {
 
             realm.addComponentModel(receiverModel);
         } else {
-            log.infof("Updating existing receiver. realm=%s alias=%s", realm.getName(), receiverAlias);
             receiverModel = new ReceiverModel(existingComponent);
+            log.infof("Updating existing receiver. realm=%s alias=%s stream_id=%s", realm.getName(), receiverAlias, receiverModel.getStreamId());
         }
 
         SharedSignalsReceiver receiver = lookupReceiver(context, receiverAlias);
         registerKeys(receiverModel);
 
         if (Boolean.TRUE.equals(receiverModel.getManagedStream())) {
-            receiverModel = receiver.registerStream();
-            log.debugf("Registered receiver with managed stream. realm=%s alias=%s", realm.getName(), receiverModel.getAlias());
+            try {
+                receiverModel = receiver.registerStream();
+                log.debugf("Registered receiver with managed stream. realm=%s alias=%s stream_id=%s", realm.getName(), receiverModel.getAlias(), receiverModel.getStreamId());
+            } catch (final SharedSignalsException e) {
+                removeReceiver(context, receiverModel);
+                throw e;
+            }
         } else {
             receiverModel = receiver.importStream();
-            log.debugf("Registered receiver with pre-configured stream. realm=%s alias=%s", realm.getName(), receiverModel.getAlias());
+            log.debugf("Registered receiver with pre-configured stream. realm=%s alias=%s stream_id=%s", realm.getName(), receiverModel.getAlias(), receiverModel.getStreamId());
         }
 
         updateReceiverModel(realm, receiverModel);
@@ -158,11 +163,18 @@ public class ReceiverManager {
             return;
         }
 
-        receiver.unregisterStream();
+        RealmModel realm = context.getRealm();
         ReceiverModel model = receiver.getReceiverModel();
+
+        if (receiverModel.getStreamId() == null) {
+            log.debugf("Skipping unregister stream for unknown streamId. realm=%s receiver=%s", realm.getName(), model.getAlias());
+        } else {
+            // only remove stream if we stored a stream id
+            receiver.unregisterStream();
+        }
+
         unregisterKeys(model);
 
-        RealmModel realm = context.getRealm();
         realm.removeComponent(model);
         log.debugf("Removed receiver component with id %s. realm=%s receiver=%s", model.getId(), realm.getName(), model.getAlias());
     }

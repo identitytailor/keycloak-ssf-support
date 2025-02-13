@@ -63,7 +63,7 @@ public class DefaultSecurityEventParser implements SecurityEventParser {
                     .verify(tokenBytes, jws.getSignature());
             return valid ? jws.readJsonContent(SecurityEventToken.class) : null;
         } catch (Exception e) {
-            log.trace("Failed to decode token", e);
+            log.debug("Failed to decode token", e);
             return null;
         }
     }

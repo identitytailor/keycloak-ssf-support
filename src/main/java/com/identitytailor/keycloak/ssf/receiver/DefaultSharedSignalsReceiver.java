@@ -65,7 +65,7 @@ public class DefaultSharedSignalsReceiver implements SharedSignalsReceiver {
 
         return realm.getComponentsStream(receiverModel.getId(), KeyProvider.class.getName()).map(ReceiverKeyModel::new).map(receiverKey -> {
             String encodedPublicKey = receiverKey.getPublicKey();
-            PublicKey publicKey = TransmitterKeyManager.decodePublicKey(encodedPublicKey);
+            PublicKey publicKey = TransmitterKeyManager.decodePublicKey(encodedPublicKey, receiverKey.getType(), receiverKey.getAlgorithm());
             KeyWrapper key = new KeyWrapper();
             key.setKid(receiverKey.getKid());
             key.setAlgorithm(receiverKey.getAlgorithm());

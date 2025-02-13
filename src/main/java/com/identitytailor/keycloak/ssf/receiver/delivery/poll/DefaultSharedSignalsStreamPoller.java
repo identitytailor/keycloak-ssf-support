@@ -98,7 +98,11 @@ public class DefaultSharedSignalsStreamPoller implements SharedSignalsStreamPoll
     protected SimpleHttp preparePollingHttpClient(SecurityEventPollingRequest pollingRequest, ReceiverModel receiverModel) {
         String transmitterPollUrl = receiverModel.getTransmitterPollUrl();
         String transmitterAccessToken = receiverModel.getTransmitterAccessToken();
-        return SimpleHttp.doPost(transmitterPollUrl, session).auth(transmitterAccessToken).json(pollingRequest);
+        return SimpleHttp.doPost(transmitterPollUrl, session) //
+                .auth(transmitterAccessToken) //
+                .connectTimeoutMillis(receiverModel.getConnectTimeout()) //
+                .socketTimeOutMillis(receiverModel.getSocketTimeout()) //
+                .json(pollingRequest);
     }
 
     protected void processPollingResponse(RealmModel realm, SecurityEventPollingContext pollingContext, SecurityEventPollingRequest pollingRequest, SecurityEventPollingResponse

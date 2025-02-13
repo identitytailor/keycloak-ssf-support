@@ -115,12 +115,12 @@ public class DefaultSecurityEventProcessor implements SecurityEventProcessor {
         String expectedState = verificationState == null ? null : verificationState.getState();
 
         if (givenState.equals(expectedState)) {
-            log.debugf("Verification successful!. %s", jti);
+            log.debugf("Verification successful!. jti=%s state=%s", jti, givenState);
             sharedSignalsStore.clearVerificationState(realm, receiverModel);
             return true;
         }
 
-        log.warnf("Verification failed. %s", jti);
+        log.warnf("Verification failed. jti=%s state=%s", jti, givenState);
         throw new SharedSignalsStreamVerificationException("Verification state mismatch.");
     }
 

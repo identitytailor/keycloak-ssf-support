@@ -227,6 +227,9 @@ public class ReceiverModel extends ComponentModel {
 
     public int getConfigHash() {
         String configHash = getConfig().getFirst("configHash");
+        if (configHash == null || configHash.isEmpty()) {
+            return -1;
+        }
         return Integer.parseInt(configHash);
     }
 
@@ -240,5 +243,29 @@ public class ReceiverModel extends ComponentModel {
 
     public String getPushAuthorizationToken() {
         return getConfig().getFirst("pushAuthorizationToken");
+    }
+
+    public int getConnectTimeout() {
+        String timeout = getConfig().getFirst("connectTimeout");
+        if (timeout == null || timeout.isEmpty()) {
+            return 3000;
+        }
+        return Integer.parseInt(timeout);
+    }
+
+    public void setConnectTimeout(int timeout) {
+        getConfig().putSingle("connectTimeout", Integer.toString(timeout));
+    }
+
+    public int getSocketTimeout() {
+        String timeout = getConfig().getFirst("socketTimeout");
+        if (timeout == null || timeout.isEmpty()) {
+            return 3000;
+        }
+        return Integer.parseInt(timeout);
+    }
+
+    public void setSocketTimeout(int timeout) {
+        getConfig().putSingle("socketTimeout", Integer.toString(timeout));
     }
 }
