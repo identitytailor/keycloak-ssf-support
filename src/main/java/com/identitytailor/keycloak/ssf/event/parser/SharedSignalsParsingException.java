@@ -4,9 +4,6 @@ import com.identitytailor.keycloak.ssf.SharedSignalsException;
 
 public class SharedSignalsParsingException extends SharedSignalsException {
 
-    public SharedSignalsParsingException() {
-    }
-
     public SharedSignalsParsingException(String message) {
         super(message);
     }

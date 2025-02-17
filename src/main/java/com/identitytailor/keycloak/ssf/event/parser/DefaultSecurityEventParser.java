@@ -44,7 +44,6 @@ public class DefaultSecurityEventParser implements SecurityEventParser {
             String kid = header.getKeyId();
             String alg = header.getRawAlgorithm();
 
-            // TODO select key on algorithm
             KeyWrapper key = receiver.getKeys()
                     .filter(kw -> kw.getKid().equals(kid) && kw.getAlgorithm().equals(alg))
                     .findFirst()
