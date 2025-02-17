@@ -39,4 +39,8 @@ public class ReceiverRepresentation {
     protected int configHash;
 
     protected long modifiedAt;
+
+    protected int maxEvents;
+
+    protected boolean acknowledgeImmediately;
 }

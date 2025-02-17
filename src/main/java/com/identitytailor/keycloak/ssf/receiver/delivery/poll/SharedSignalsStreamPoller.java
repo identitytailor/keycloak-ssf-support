@@ -10,5 +10,5 @@ import org.keycloak.models.RealmModel;
  */
 public interface SharedSignalsStreamPoller {
 
-    void pollEvents(SecurityEventPollingContext pollingContext, SecurityEventPollingConfig config, RealmModel realm, ReceiverModel receiverModel);
+    void pollEvents(SecurityEventPollingContext pollingContext,RealmModel realm, ReceiverModel receiverModel);
 }

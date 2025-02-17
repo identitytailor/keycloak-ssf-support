@@ -122,6 +122,8 @@ public class ReceiverManagementEndpoint {
         rep.setStreamId(model.getStreamId());
         rep.setModifiedAt(model.getModifiedAt());
         rep.setConfigHash(model.getConfigHash());
+        rep.setMaxEvents(model.getMaxEvents());
+        rep.setAcknowledgeImmediately(model.isAcknowledgeImmediately());
         return rep;
     }
 }

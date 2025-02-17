@@ -31,13 +31,11 @@ public class DefaultSharedSignalsStreamPoller implements SharedSignalsStreamPoll
     }
 
     @Override
-    public void pollEvents(SecurityEventPollingContext pollingContext, SecurityEventPollingConfig config, RealmModel realm, ReceiverModel receiverModel) {
+    public void pollEvents(SecurityEventPollingContext pollingContext, RealmModel realm, ReceiverModel receiverModel) {
 
         SharedSignalsProvider sharedSignals = session.getProvider(SharedSignalsProvider.class);
 
-        SecurityEventPollingPolicy pollingPolicy = config.getPollingPolicy();
-
-        SecurityEventPollingRequest pollingRequest = createPollingRequest(pollingContext, pollingPolicy);
+        SecurityEventPollingRequest pollingRequest = createPollingRequest(pollingContext, receiverModel);
 
         log.tracef("Sending polling request. %s", pollingRequest);
         SimpleHttp pollingHttp = preparePollingHttpClient(pollingRequest, receiverModel);
@@ -55,21 +53,21 @@ public class DefaultSharedSignalsStreamPoller implements SharedSignalsStreamPoll
             log.warnf(e, "Failed to fetch events from polling endpoint. %s", pollingRequest);
         }
 
-        if (!config.isAcknowledgeImmediately()) {
+        if (!receiverModel.isAcknowledgeImmediately()) {
             return;
         }
 
-        sendAcknowledgements(pollingContext, pollingRequest, pollingPolicy, receiverModel);
+        sendAcknowledgements(pollingContext, pollingRequest, receiverModel);
     }
 
-    private void sendAcknowledgements(SecurityEventPollingContext pollingContext, SecurityEventPollingRequest pollingRequest, SecurityEventPollingPolicy pollingPolicy, ReceiverModel receiverModel) {
+    private void sendAcknowledgements(SecurityEventPollingContext pollingContext, SecurityEventPollingRequest pollingRequest, ReceiverModel receiverModel) {
 
         if (!pollingContext.hasSecurityEventsToAcknowledge()) {
             return;
         }
 
         log.tracef("Sending ack-only request. %s", pollingRequest);
-        SecurityEventPollingRequest ackOnlyRequest = createAckOnlyRequest(pollingPolicy, pollingContext.getSecurityEventIdsToAcknowledge());
+        SecurityEventPollingRequest ackOnlyRequest = createAckOnlyRequest(pollingContext.getSecurityEventIdsToAcknowledge());
         SimpleHttp pollingHttp = preparePollingHttpClient(ackOnlyRequest, receiverModel);
 
         try (var response = pollingHttp.asResponse()) {
@@ -87,11 +85,11 @@ public class DefaultSharedSignalsStreamPoller implements SharedSignalsStreamPoll
         pollingContext.markSecurityEventAsAcknowledged();
     }
 
-    protected SecurityEventPollingRequest createPollingRequest(SecurityEventPollingContext pollingContext, SecurityEventPollingPolicy pollingPolicy) {
+    protected SecurityEventPollingRequest createPollingRequest(SecurityEventPollingContext pollingContext, ReceiverModel receiverModel) {
         if (pollingContext.hasSecurityEventsToAcknowledge()) {
-            return createPollAndAckRequest(pollingContext, pollingPolicy);
+            return createPollAndAckRequest(pollingContext, receiverModel);
         } else {
-            return createPollOnlyRequest(pollingPolicy);
+            return createPollOnlyRequest(receiverModel);
         }
     }
 
@@ -137,7 +135,7 @@ public class DefaultSharedSignalsStreamPoller implements SharedSignalsStreamPoll
 
         try {
             provider.processSecurityEvents(processingContext);
-        } catch(SharedSignalsStreamVerificationException sssve) {
+        } catch (SharedSignalsStreamVerificationException sssve) {
             log.warnf(sssve, "Failed to verify stream. %s", securityEventToken);
             // use errorCode invalid_state, see: https://openid.net/specs/openid-sharedsignals-framework-1_0.html#section-7.1.4.1
             var errorSecurityEventToken = new ErrorSecurityEventToken("invalid_state", sssve.getMessage());
@@ -161,20 +159,20 @@ public class DefaultSharedSignalsStreamPoller implements SharedSignalsStreamPoll
         }
     }
 
-    protected SecurityEventPollingRequest createPollAndAckRequest(SecurityEventPollingContext pollingContext, SecurityEventPollingPolicy pollingPolicy) {
+    protected SecurityEventPollingRequest createPollAndAckRequest(SecurityEventPollingContext pollingContext, ReceiverModel receiverModel) {
 
         Set<String> acks = pollingContext.getSecurityEventIdsToAcknowledge();
 
         var request = new SecurityEventPollingRequest();
         request.setPollingMode(PollingMode.POLL_AND_ACK);
         request.setReturnImmediately(true);
-        request.setMaxEvents(pollingPolicy.getMaxEvents());
+        request.setMaxEvents(receiverModel.getMaxEvents());
         request.setAck(acks);
 
         return request;
     }
 
-    protected SecurityEventPollingRequest createAckOnlyRequest(SecurityEventPollingPolicy pollingPolicy, Set<String> acknowledgedSecurityEventIds) {
+    protected SecurityEventPollingRequest createAckOnlyRequest(Set<String> acknowledgedSecurityEventIds) {
 
         var request = new SecurityEventPollingRequest();
         request.setPollingMode(PollingMode.ACK_ONLY);
@@ -185,12 +183,12 @@ public class DefaultSharedSignalsStreamPoller implements SharedSignalsStreamPoll
         return request;
     }
 
-    protected SecurityEventPollingRequest createPollOnlyRequest(SecurityEventPollingPolicy pollingPolicy) {
+    protected SecurityEventPollingRequest createPollOnlyRequest(ReceiverModel receiverModel) {
 
         var request = new SecurityEventPollingRequest();
         request.setPollingMode(PollingMode.POLL_ONLY);
         request.setReturnImmediately(true);
-        request.setMaxEvents(pollingPolicy.getMaxEvents());
+        request.setMaxEvents(receiverModel.getMaxEvents());
 
         return request;
     }

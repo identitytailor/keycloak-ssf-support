@@ -8,6 +8,8 @@ import java.util.*;
 
 public class ReceiverModel extends ComponentModel {
 
+    public static final int DEFAULT_MAX_EVENTS = 32;
+
     public ReceiverModel() {
     }
 
@@ -43,6 +45,18 @@ public class ReceiverModel extends ComponentModel {
         model.setTransmitterPollUrl(config.getTransmitterPollUrl());
         model.setPollIntervalSeconds(config.getPollIntervalSeconds());
         model.setManagedStream(config.getManagedStream());
+
+        if (config.getMaxEvents() != null) {
+            model.setMaxEvents(config.getMaxEvents());
+        } else {
+            model.setMaxEvents(DEFAULT_MAX_EVENTS);
+        }
+
+        if (Boolean.TRUE.equals(config.getAcknowledgeImmediately())) {
+            model.setAcknowledgeImmediately(config.getAcknowledgeImmediately());
+        } else {
+            model.setAcknowledgeImmediately(false);
+        }
 
         if (Boolean.TRUE.equals(model.getManagedStream())) {
             model.setEventsRequested(config.getEventsRequested());
@@ -217,6 +231,27 @@ public class ReceiverModel extends ComponentModel {
         }
         return Long.parseLong(modifiedAt);
     }
+
+    public void setMaxEvents(int maxEvents) {
+        getConfig().putSingle("maxEvents", Integer.toString(maxEvents));
+    }
+
+    public int getMaxEvents() {
+        String maxEvents = getConfig().getFirst("maxEvents");
+        if (maxEvents == null || maxEvents.isEmpty()) {
+            return -1;
+        }
+        return Integer.parseInt(maxEvents);
+    }
+
+    public boolean isAcknowledgeImmediately() {
+        return Boolean.parseBoolean(getConfig().getFirst("acknowledgeImmediately"));
+    }
+
+    public void setAcknowledgeImmediately(boolean acknowledgeImmediately) {
+        getConfig().putSingle("acknowledgeImmediately", Boolean.toString(Boolean.TRUE.equals(acknowledgeImmediately)));
+    }
+
 
     public static int computeConfigHash(ReceiverModel receiverModel) {
         var copy = new MultivaluedHashMap<>(receiverModel.getConfig());

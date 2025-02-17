@@ -13,6 +13,8 @@ import org.keycloak.models.utils.PostMigrationEvent;
 import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.services.resource.RealmResourceProviderFactory;
 
+import java.time.Duration;
+
 import static org.keycloak.utils.KeycloakSessionUtil.getKeycloakSession;
 
 @JBossLog
@@ -89,7 +91,9 @@ public class SharedSignalsRealmResourceProvider implements RealmResourceProvider
         }
 
         protected void bootstrapPolling(KeycloakSessionFactory keycloakSessionFactory) {
-            new SharedSignalsStreamPollerBootstrap(keycloakSessionFactory).schedulePolling();
+            // TODO fetch pollingInterval from config
+            Duration pollingInterval = Duration.ofSeconds(5);
+            new SharedSignalsStreamPollerBootstrap(keycloakSessionFactory, pollingInterval).schedulePolling();
         }
     }
 }

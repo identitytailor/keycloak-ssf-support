@@ -35,4 +35,8 @@ public class ReceiverConfig {
     protected String providerId;
 
     protected String streamId;
+
+    protected Integer maxEvents;
+
+    protected Boolean acknowledgeImmediately;
 }
