@@ -23,7 +23,11 @@ requests/http-client.private.env.json
 .springBeans
 .sts4-cache
 
-scratch/
+# Ignore everything in scratch/ folder
+scratch/*
+
+# But allow .gitkeep file
+!scratch/.gitkeep
 
 ### NetBeans ###
 /nbproject/private/
