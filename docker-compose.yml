@@ -76,9 +76,13 @@ services:
       # Keycloak h2 database
       - ./scratch/data:/opt/keycloak/data:z
 
+      - ./scratch:/imex:z
+
     command:
       - "--verbose"
       - "start-dev"
+      - "--import-realm"
+
 
 volumes:
   keycloak-data:

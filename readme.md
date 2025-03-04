@@ -19,11 +19,22 @@ mvn clean verify
 
 # Run
 
+After running the following command, Keycloak will be available on:
+http://localhost:18080/auth/admin
+
+Username: `admin`
+Password: `admin`
+
 ```
 docker compose up
 ```
 
 # Example Requests
 
-You can find some [example requests](./requests) in the requests folder.
+You can find some [example requests](./requests) to register a SSF receiver with a managed stream in the requests folder.
 Note that you need to create an access token on the [caep.dev/](https://caep.dev/) website first to use their API.
+
+The example requests use the `ssf-demo` realm imported during Keycloak startup.
+
+For demo purposes, you can login as the `tester` user with password `test`
+via the accounts console: http://localhost:18080/auth/realms/ssf-demo/account/

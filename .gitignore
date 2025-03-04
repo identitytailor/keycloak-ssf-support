@@ -29,6 +29,9 @@ scratch/*
 # But allow .gitkeep file
 !scratch/.gitkeep
 
+# And allow import files
+!scratch/data/import/ssf-demo.json
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
