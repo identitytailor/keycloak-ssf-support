@@ -44,7 +44,10 @@ public class SharedSignalsPushEndpoint {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
 //    @Consumes(APPLICATION_SECEVENT_JWT_TYPE) // some SSF providers don't set the correct content-type
-    public Response ingestSecurityEventToken(@PathParam("receiverAlias") String receiverAlias, String encodedSecurityEventToken, @HeaderParam(HttpHeaders.AUTHORIZATION) String authToken) {
+    public Response ingestSecurityEventToken(@PathParam("receiverAlias") String receiverAlias,
+                                             String encodedSecurityEventToken,
+                                             @HeaderParam(HttpHeaders.AUTHORIZATION) String authToken,
+                                             @HeaderParam(HttpHeaders.CONTENT_TYPE) String contentType) {
 
         KeycloakSession session = getKeycloakSession();
         KeycloakContext context = session.getContext();
@@ -59,6 +62,10 @@ public class SharedSignalsPushEndpoint {
             if (!("Bearer " + pushAuthorizationToken).equals(authToken)) {
                 throw newSharedSignalFailureResponse(Response.Status.UNAUTHORIZED, SharedSignalsFailureResponse.ERROR_AUTHENTICATION_FAILED, "Invalid auth token");
             }
+        }
+
+        if (!APPLICATION_SECEVENT_JWT_TYPE.equals(contentType)) {
+            log.warnf("Received PUSH request with unsupported content type '%s'.", contentType);
         }
 
         // parse security event token

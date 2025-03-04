@@ -1,6 +1,7 @@
 package com.identitytailor.keycloak.ssf.transmitter;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -144,6 +145,11 @@ public class SharedSignalsTransmitterMetadata {
 
     public void setAuthorizationSchemes(List<Object> authorizationSchemes) {
         this.authorizationSchemes = authorizationSchemes;
+    }
+
+    @JsonAnySetter
+    public void setMetadata(String key, Object value) {
+        metadata.put(key, value);
     }
 
     @JsonAnyGetter

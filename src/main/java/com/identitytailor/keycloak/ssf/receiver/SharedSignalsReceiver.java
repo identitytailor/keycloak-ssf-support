@@ -1,6 +1,5 @@
 package com.identitytailor.keycloak.ssf.receiver;
 
-import com.identitytailor.keycloak.ssf.event.types.SecurityEvent;
 import com.identitytailor.keycloak.ssf.transmitter.SharedSignalsTransmitterMetadata;
 import org.keycloak.crypto.KeyWrapper;
 import org.keycloak.provider.Provider;
