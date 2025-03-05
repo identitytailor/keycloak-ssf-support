@@ -18,9 +18,7 @@ import com.identitytailor.keycloak.ssf.storage.SharedSignalsStore;
 import lombok.extern.jbosslog.JBossLog;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
-import org.keycloak.util.JsonSerialization;
 
-import java.io.IOException;
 import java.util.Map;
 
 @JBossLog
@@ -48,7 +46,7 @@ public class DefaultSecurityEventProcessor implements SecurityEventProcessor {
             Map<String, Object> securityEventData = entry.getValue();
 
             try {
-                SecurityEvent securityEvent = convertEventDataToSecurityEvent(securityEventType, securityEventData);
+                SecurityEvent securityEvent = convertEventDataToSecurityEvent(securityEventType, securityEventData, securityEventToken);
 
                 if (securityEvent instanceof VerificationEvent verificationEvent) {
                     // handle verification event
@@ -57,16 +55,18 @@ public class DefaultSecurityEventProcessor implements SecurityEventProcessor {
                         log.warnf("Found more than one security event for token with verification request. %s", jti);
                     }
 
-                    if (handleVerificationEvent(processingContext, verificationEvent, jti)) {
+                    boolean verified = handleVerificationEvent(processingContext, verificationEvent, jti);
+                    if (verified) {
                         break;
                     }
                 } else if (securityEvent instanceof StreamUpdatedEvent streamUpdatedEvent) {
-
-                    if (handleStreamUpdatedEvent(processingContext, streamUpdatedEvent, jti)) {
+                    // handle stream updated event
+                    boolean streamUpdated = handleStreamUpdatedEvent(processingContext, streamUpdatedEvent, jti);
+                    if (streamUpdated) {
                         break;
                     }
                 } else {
-                    // handle verification event
+                    // handle generic event
                     handleEvent(processingContext, jti, securityEvent);
                 }
             } catch (final SharedSignalsParsingException sspe) {
@@ -77,7 +77,7 @@ public class DefaultSecurityEventProcessor implements SecurityEventProcessor {
         processingContext.setProcessedSuccessfully(true);
     }
 
-    protected SecurityEvent convertEventDataToSecurityEvent(String securityEventType, Map<String, Object> securityEventData) {
+    protected SecurityEvent convertEventDataToSecurityEvent(String securityEventType, Map<String, Object> securityEventData, SecurityEventToken securityEventToken) {
 
         Class<? extends SecurityEvent> eventClass = SecurityEvents.getSecurityEventType(securityEventType);
 
@@ -88,6 +88,11 @@ public class DefaultSecurityEventProcessor implements SecurityEventProcessor {
         try {
             SecurityEvent securityEvent = OBJECT_MAPPER.convertValue(securityEventData, eventClass);
             securityEvent.setEventType(securityEventType);
+            if (securityEvent.getSubjectId() == null) {
+                // use subjectId from SET if none was provided for the event explicitly.
+                securityEvent.setSubjectId(securityEventToken.getSubjectId());
+            }
+
             return securityEvent;
         } catch (Exception e) {
             throw new SharedSignalsParsingException("Could not parse security event.", e);
