@@ -2,7 +2,7 @@ Shared Signals Framework for Keycloak
 ---
 
 This repository provides PoC support for the Shared Signals Framework as a Keycloak extension
-for Keycloak 26.1.3.
+for Keycloak 26.1.4.
 
 Currently, the following features are supported:
 - Management of shared signals receivers
@@ -10,6 +10,10 @@ Currently, the following features are supported:
 - Pluggable security event listeners (Security Event Listener SPI)
 - Pluggable Shared Signal Framework Component (Shared Signals SPI)
 - Support for using managed and external streams
+
+# Architecture
+
+![architecture](architecture.png "Architecture")
 
 # Build
 
