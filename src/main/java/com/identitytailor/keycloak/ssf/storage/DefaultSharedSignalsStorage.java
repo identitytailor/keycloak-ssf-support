@@ -9,7 +9,7 @@ import org.keycloak.models.SingleUseObjectProvider;
 
 import java.util.Map;
 
-public class DefaultSharedSignalsStorage implements SharedSignalsStore {
+public class DefaultSharedSignalsStorage implements VerificationStore {
 
     private final KeycloakSession session;
 

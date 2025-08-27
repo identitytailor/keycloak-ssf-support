@@ -9,7 +9,7 @@ public class SharedSignalsSpi implements Spi {
 
     @Override
     public String getName() {
-        return "shared-signals";
+        return "ssf";
     }
 
     @Override

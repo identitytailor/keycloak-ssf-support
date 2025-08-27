@@ -1,0 +1,89 @@
+### Transmitter Metadata
+GET {{transmitterConfigUrl}}
+
+### Transmitter Metadata (internal endpoint)
+GET {{issuer}}/ssf/.well-known/ssf-configuration
+
+### Get Streams
+GET {{issuer}}/ssf/streams
+Authorization: Bearer {{transmitterToken}}
+
+### Create Stream
+POST {{issuer}}/ssf/streams
+Authorization: Bearer {{transmitterToken}}
+Content-Type: application/json
+
+{
+  "description": "Stream for ssf-receiver-1",
+  "delivery": {
+    "method": "urn:ietf:rfc:8935",
+    "endpoint_url": "http://receiver.example.com:8909/ssf/push",
+    "authorization_header": "dummyAuthToken"
+  },
+  "events_requested": [
+    "https://schemas.openid.net/secevent/caep/event-type/session-revoked",
+    "https://schemas.openid.net/secevent/caep/event-type/credential-change",
+    "https://schemas.openid.net/secevent/caep/event-type/device-compliance-change",
+    "https://schemas.openid.net/secevent/caep/event-type/token-claims-change",
+    "https://schemas.openid.net/secevent/caep/event-type/assurance-level-change"
+  ]
+}
+
+> {%
+    client.global.set("stream_id", response.body['stream_id'])
+%}
+
+### Get Stream by StreamId
+GET {{issuer}}/ssf/streams?stream_id={{ stream_id }}
+Authorization: Bearer {{transmitterToken}}
+
+### Update Stream
+POST {{issuer}}/ssf/streams
+Authorization: Bearer {{transmitterToken}}
+Content-Type: application/json
+
+{
+  "stream_id": "{{ stream_id }}",
+  "description": "Stream for ssf-receiver-1 updated",
+  "delivery": {
+    "method": "urn:ietf:rfc:8935",
+    "endpoint_url": "http://receiver.example.com:8909/ssf/push",
+    "authorization_header": "dummyAuthToken"
+  },
+  "events_requested": [
+    "https://schemas.openid.net/secevent/caep/event-type/session-revoked",
+    "https://schemas.openid.net/secevent/caep/event-type/credential-change",
+    "https://schemas.openid.net/secevent/caep/event-type/device-compliance-change",
+    "https://schemas.openid.net/secevent/caep/event-type/token-claims-change",
+    "https://schemas.openid.net/secevent/caep/event-type/assurance-level-change"
+  ]
+}
+
+### Get Stream status
+GET {{issuer}}/ssf/streams/status?stream_id={{ stream_id }}
+Authorization: Bearer {{transmitterToken}}
+
+### Pause Stream
+POST {{issuer}}/ssf/streams/status?stream_id={{ stream_id }}
+Authorization: Bearer {{transmitterToken}}
+Content-Type: application/json
+
+{
+  "stream_id": "{{ stream_id }}",
+  "status": "paused",
+  "reason": "test"
+}
+
+### Enable Stream
+POST {{issuer}}/ssf/streams/status?stream_id={{ stream_id }}
+Authorization: Bearer {{transmitterToken}}
+Content-Type: application/json
+
+{
+  "stream_id": "{{ stream_id }}",
+  "status": "enabled"
+}
+
+### Delete Stream
+DELETE {{issuer}}/ssf/streams?stream_id={{ stream_id }}
+Authorization: Bearer {{transmitterToken}}

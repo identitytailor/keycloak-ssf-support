@@ -12,7 +12,7 @@ import com.identitytailor.keycloak.ssf.event.processor.SecurityEventProcessor;
 import com.identitytailor.keycloak.ssf.receiver.SharedSignalsReceiver;
 import com.identitytailor.keycloak.ssf.receiver.delivery.poll.DefaultSharedSignalsStreamPoller;
 import com.identitytailor.keycloak.ssf.receiver.delivery.poll.SharedSignalsStreamPoller;
-import com.identitytailor.keycloak.ssf.receiver.delivery.push.SharedSignalsPushEndpoint;
+import com.identitytailor.keycloak.ssf.receiver.delivery.push.PushEndpoint;
 import com.identitytailor.keycloak.ssf.receiver.management.ReceiverManagementEndpoint;
 import com.identitytailor.keycloak.ssf.receiver.management.ReceiverManager;
 import com.identitytailor.keycloak.ssf.receiver.management.ReceiverStreamManager;
@@ -23,8 +23,25 @@ import com.identitytailor.keycloak.ssf.receiver.transmitterclient.TransmitterCli
 import com.identitytailor.keycloak.ssf.receiver.verification.DefaultSecurityEventsVerificationClient;
 import com.identitytailor.keycloak.ssf.receiver.verification.SecurityEventsVerificationClient;
 import com.identitytailor.keycloak.ssf.storage.DefaultSharedSignalsStorage;
-import com.identitytailor.keycloak.ssf.storage.SharedSignalsStore;
+import com.identitytailor.keycloak.ssf.storage.VerificationStore;
 import com.identitytailor.keycloak.ssf.streams.model.DeliveryMethod;
+import com.identitytailor.keycloak.ssf.transmitter.delivery.SecurityEventTokenDeliveryService;
+import com.identitytailor.keycloak.ssf.transmitter.delivery.polling.PollDeliveryService;
+import com.identitytailor.keycloak.ssf.transmitter.delivery.polling.PollEndpoint;
+import com.identitytailor.keycloak.ssf.transmitter.delivery.push.PushDeliveryService;
+import com.identitytailor.keycloak.ssf.transmitter.event.SecurityEventTokenEncoder;
+import com.identitytailor.keycloak.ssf.transmitter.event.SecurityEventTokenMapper;
+import com.identitytailor.keycloak.ssf.transmitter.metadata.TransmitterConfigurationEndpoint;
+import com.identitytailor.keycloak.ssf.transmitter.metadata.TransmitterService;
+import com.identitytailor.keycloak.ssf.transmitter.storage.SsfEventStore;
+import com.identitytailor.keycloak.ssf.transmitter.storage.SsfStreamStore;
+import com.identitytailor.keycloak.ssf.transmitter.storage.memory.InMemoryEventStore;
+import com.identitytailor.keycloak.ssf.transmitter.storage.memory.InMemoryStreamStore;
+import com.identitytailor.keycloak.ssf.transmitter.streams.StreamManagementEndpoint;
+import com.identitytailor.keycloak.ssf.transmitter.streams.StreamService;
+import com.identitytailor.keycloak.ssf.transmitter.streams.StreamStatusEndpoint;
+import com.identitytailor.keycloak.ssf.transmitter.verification.VerificationEndpoint;
+import com.identitytailor.keycloak.ssf.transmitter.verification.VerificationService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import org.keycloak.Config;
@@ -45,7 +62,17 @@ public class DefaultSharedSignalsProvider implements SharedSignalsProvider {
 
     protected SecurityEventListener securityEventListener;
 
-    protected SharedSignalsPushEndpoint sharedSignalsPushEndpoint;
+    protected PushEndpoint pushEndpoint;
+
+    protected PollEndpoint pollEndpoint;
+
+    protected StreamManagementEndpoint streamManagementEndpoint;
+
+    protected StreamStatusEndpoint streamStatusEndpoint;
+
+    protected TransmitterConfigurationEndpoint transmitterConfigurationEndpoint;
+
+    protected VerificationEndpoint verificationEndpoint;
 
     protected ReceiverManagementEndpoint receiverManagementEndpoint;
 
@@ -53,7 +80,7 @@ public class DefaultSharedSignalsProvider implements SharedSignalsProvider {
 
     protected SecurityEventsVerificationClient securityEventsVerifier;
 
-    protected SharedSignalsStore sharedSignalsStore;
+    protected VerificationStore verificationStore;
 
     protected SharedSignalsStreamClient streamClient;
 
@@ -62,6 +89,24 @@ public class DefaultSharedSignalsProvider implements SharedSignalsProvider {
     protected ReceiverManager receiverManager;
 
     protected ReceiverStreamManager receiverStreamManager;
+
+    protected PollDeliveryService pollDeliveryService;
+
+    protected PushDeliveryService pushDeliveryService;
+
+    protected StreamService streamService;
+
+    protected SsfEventStore eventStore;
+
+    protected SsfStreamStore streamStore;;
+
+    protected TransmitterService transmitterService;
+
+    protected VerificationService verificationService;
+
+    protected SecurityEventTokenEncoder securityEventTokenEncoder;
+
+    protected SecurityEventTokenDeliveryService securityEventTokenDeliveryService;
 
     public DefaultSharedSignalsProvider(KeycloakSession session) {
         this.session = session;
@@ -85,11 +130,11 @@ public class DefaultSharedSignalsProvider implements SharedSignalsProvider {
         return securityEventProcessor;
     }
 
-    protected SharedSignalsPushEndpoint getPushEndpoint() {
-        if (sharedSignalsPushEndpoint == null) {
-            sharedSignalsPushEndpoint = new SharedSignalsPushEndpoint();
+    protected PushEndpoint getPushEndpoint() {
+        if (pushEndpoint == null) {
+            pushEndpoint = new PushEndpoint();
         }
-        return sharedSignalsPushEndpoint;
+        return pushEndpoint;
     }
 
     protected ReceiverManagementEndpoint getReceiverManagementEndpoint() {
@@ -127,11 +172,11 @@ public class DefaultSharedSignalsProvider implements SharedSignalsProvider {
         return securityEventsVerifier;
     }
 
-    protected SharedSignalsStore getSharedSignalsStore() {
-        if (sharedSignalsStore == null) {
-            sharedSignalsStore = new DefaultSharedSignalsStorage(session);
+    protected VerificationStore getSharedSignalsStore() {
+        if (verificationStore == null) {
+            verificationStore = new DefaultSharedSignalsStorage(session);
         }
-        return sharedSignalsStore;
+        return verificationStore;
     }
 
     protected SharedSignalsStreamClient getStreamClient() {
@@ -161,12 +206,12 @@ public class DefaultSharedSignalsProvider implements SharedSignalsProvider {
     }
 
     @Override
-    public SharedSignalsStore storage() {
+    public VerificationStore verificationStore() {
         return getSharedSignalsStore();
     }
 
     @Override
-    public SharedSignalsPushEndpoint pushEndpoint() {
+    public PushEndpoint pushEndpoint() {
         return getPushEndpoint();
     }
 
@@ -232,6 +277,180 @@ public class DefaultSharedSignalsProvider implements SharedSignalsProvider {
         return context;
     }
 
+    @Override
+    public PollEndpoint pollEndpoint() {
+        return getPollEndpoint();
+    }
+
+    protected PollEndpoint getPollEndpoint() {
+        if (pollEndpoint == null) {
+            pollEndpoint = new PollEndpoint(session, pollDeliveryService());
+        }
+        return pollEndpoint;
+    }
+
+    @Override
+    public StreamManagementEndpoint streamManagementEndpoint() {
+        return getStreamManagementEndpoint();
+    }
+
+    protected StreamManagementEndpoint getStreamManagementEndpoint() {
+
+        if (streamManagementEndpoint == null) {
+            streamManagementEndpoint = new StreamManagementEndpoint(streamService());
+        }
+        return streamManagementEndpoint;
+    }
+
+    @Override
+    public StreamStatusEndpoint streamStatusEndpoint() {
+        return getStreamStatusEndpoint();
+    }
+
+    protected StreamStatusEndpoint getStreamStatusEndpoint() {
+
+        if (streamStatusEndpoint == null) {
+            streamStatusEndpoint = new StreamStatusEndpoint(streamService());
+        }
+        return streamStatusEndpoint;
+    }
+
+    @Override
+    public TransmitterConfigurationEndpoint transmitterConfigurationEndpoint() {
+        return getTransmitterConfigurationEndpoint();
+    }
+
+    protected TransmitterConfigurationEndpoint getTransmitterConfigurationEndpoint() {
+        if (transmitterConfigurationEndpoint == null) {
+            transmitterConfigurationEndpoint = new TransmitterConfigurationEndpoint(session, transmitterService());
+        }
+        return transmitterConfigurationEndpoint;
+    }
+
+    @Override
+    public VerificationEndpoint verificationEndpoint() {
+        return getVerificationEndpoint();
+    }
+
+    protected VerificationEndpoint getVerificationEndpoint() {
+        if (verificationEndpoint == null) {
+            verificationEndpoint = new VerificationEndpoint(verificationService());
+        }
+        return verificationEndpoint;
+    }
+
+    @Override
+    public VerificationService verificationService() {
+        return getVerificationService();
+    }
+
+    @Override
+    public SsfEventStore eventStore() {
+        return getEventStore();
+    }
+
+    protected SsfEventStore getEventStore() {
+        if (eventStore == null) {
+            eventStore = new InMemoryEventStore(session);
+        }
+        return eventStore;
+    }
+
+    @Override
+    public SsfStreamStore streamStore() {
+        return getStreamStore();
+    }
+
+    protected SsfStreamStore getStreamStore() {
+        if (streamStore == null) {
+            streamStore = new InMemoryStreamStore();
+        }
+        return streamStore;
+    }
+
+    protected VerificationService getVerificationService() {
+        if (verificationService == null) {
+            verificationService = new VerificationService(streamStore(), new SecurityEventTokenMapper(transmitterService()), securityEventTokenDeliveryService());
+        }
+        return verificationService;
+    }
+
+    @Override
+    public TransmitterService transmitterService() {
+        return getTransmitterService();
+    }
+
+    protected TransmitterService getTransmitterService() {
+        if (transmitterService == null) {
+            transmitterService = new TransmitterService(session);
+        }
+        return transmitterService;
+    }
+
+    @Override
+    public PollDeliveryService pollDeliveryService() {
+        return getPollDeliveryService();
+    }
+
+    protected PollDeliveryService getPollDeliveryService() {
+        if (pollDeliveryService == null) {
+            pollDeliveryService = new PollDeliveryService(session, new InMemoryEventStore(session));
+        }
+        return pollDeliveryService;
+    }
+
+    public PushDeliveryService pushDeliveryService() {
+        return getPushDeliveryService();
+    }
+
+    protected PushDeliveryService getPushDeliveryService() {
+        if (pushDeliveryService == null) {
+            pushDeliveryService = new PushDeliveryService(session);
+        }
+        return pushDeliveryService;
+    }
+
+    @Override
+    public StreamService streamService() {
+        return getStreamService();
+    }
+
+    protected StreamService getStreamService() {
+        if (streamService == null) {
+            streamService = new StreamService(session, streamStore(), transmitterService());
+        }
+        return streamService;
+    }
+
+    @Override
+    public ReceiverManager receiverManager() {
+        return getReceiverManager();
+    }
+
+    @Override
+    public SecurityEventTokenEncoder securityEventTokenEncoder() {
+        return getSecurityEventTokenEncoder();
+    }
+
+    @Override
+    public SecurityEventTokenDeliveryService securityEventTokenDeliveryService() {
+        return getSecurityEventTokenDeliveryService();
+    }
+
+    protected SecurityEventTokenDeliveryService getSecurityEventTokenDeliveryService() {
+        if (securityEventTokenDeliveryService == null) {
+            securityEventTokenDeliveryService = new SecurityEventTokenDeliveryService(streamStore(), securityEventTokenEncoder(), pushDeliveryService(), pollDeliveryService());
+        }
+        return securityEventTokenDeliveryService;
+    }
+
+    protected SecurityEventTokenEncoder getSecurityEventTokenEncoder() {
+        if (securityEventTokenEncoder == null) {
+            securityEventTokenEncoder = new SecurityEventTokenEncoder(session);
+        }
+        return securityEventTokenEncoder;
+    }
+
     @AutoService(SharedSignalsProviderFactory.class)
     public static class Factory implements SharedSignalsProviderFactory {
 
@@ -247,7 +466,6 @@ public class DefaultSharedSignalsProvider implements SharedSignalsProvider {
 
         @Override
         public void init(Config.Scope scope) {
-
         }
 
         @Override

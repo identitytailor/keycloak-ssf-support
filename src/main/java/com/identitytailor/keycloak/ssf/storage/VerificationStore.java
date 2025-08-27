@@ -4,7 +4,7 @@ import com.identitytailor.keycloak.ssf.receiver.ReceiverModel;
 import com.identitytailor.keycloak.ssf.receiver.verification.VerificationState;
 import org.keycloak.models.RealmModel;
 
-public interface SharedSignalsStore {
+public interface VerificationStore {
 
     void setVerificationState(RealmModel realm, ReceiverModel model, String state);
 

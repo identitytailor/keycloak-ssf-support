@@ -71,7 +71,7 @@ Content-Type: application/json
 DELETE {{transmitterIssuer}}/ssf/streams?stream_id={{ stream_id }}
 Authorization: Bearer {{transmitterToken}}
 
-### Poll events
+### Poll new events max:100 events
 POST {{transmitterIssuer}}/ssf/streams/poll
 Authorization: Bearer {{transmitterToken}}
 Content-Type: application/json
@@ -79,7 +79,7 @@ Accept: application/json
 
 {"returnImmediately":true,"maxEvents":100}
 
-### Acknowledge events
+### Acknowledge processed events, don't fetch any events
 POST {{transmitterIssuer}}/ssf/streams/poll
 Authorization: Bearer {{transmitterToken}}
 Content-Type: application/json

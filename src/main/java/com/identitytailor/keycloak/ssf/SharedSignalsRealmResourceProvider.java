@@ -2,20 +2,28 @@ package com.identitytailor.keycloak.ssf;
 
 import com.google.auto.service.AutoService;
 import com.identitytailor.keycloak.ssf.receiver.delivery.poll.SharedSignalsStreamPollerBootstrap;
-import com.identitytailor.keycloak.ssf.receiver.delivery.push.SharedSignalsPushEndpoint;
+import com.identitytailor.keycloak.ssf.receiver.delivery.push.PushEndpoint;
 import com.identitytailor.keycloak.ssf.receiver.management.ReceiverManagementEndpoint;
+import com.identitytailor.keycloak.ssf.transmitter.delivery.polling.PollEndpoint;
+import com.identitytailor.keycloak.ssf.transmitter.streams.StreamManagementEndpoint;
+import com.identitytailor.keycloak.ssf.transmitter.metadata.TransmitterConfigurationEndpoint;
+import com.identitytailor.keycloak.ssf.transmitter.streams.StreamStatusEndpoint;
+import com.identitytailor.keycloak.ssf.transmitter.verification.VerificationEndpoint;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import lombok.extern.jbosslog.JBossLog;
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.utils.PostMigrationEvent;
+import org.keycloak.services.managers.AppAuthManager;
+import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.services.resource.RealmResourceProviderFactory;
+import org.keycloak.utils.KeycloakSessionUtil;
 
 import java.time.Duration;
-
-import static org.keycloak.utils.KeycloakSessionUtil.getKeycloakSession;
 
 @JBossLog
 public class SharedSignalsRealmResourceProvider implements RealmResourceProvider {
@@ -25,6 +33,48 @@ public class SharedSignalsRealmResourceProvider implements RealmResourceProvider
         return this;
     }
 
+    // Transmitter Endpoints below
+    @Path("/.well-known/ssf-configuration")
+    public TransmitterConfigurationEndpoint getTransmitterConfigurationEndpoint() {
+        return SharedSignalsProvider.current().transmitterConfigurationEndpoint();
+    }
+
+    @Path("/streams/poll")
+    public PollEndpoint getPollEndpoint() {
+        authenticate();
+        return SharedSignalsProvider.current().pollEndpoint();
+    }
+
+    @Path("/streams")
+    public StreamManagementEndpoint getStreamManagementEndpoint() {
+        authenticate();
+        return SharedSignalsProvider.current().streamManagementEndpoint();
+    }
+
+    @Path("/streams/status")
+    public StreamStatusEndpoint getStreamStatusEndpoint() {
+        authenticate();
+        return SharedSignalsProvider.current().streamStatusEndpoint();
+    }
+
+    @Path("/verify")
+    public VerificationEndpoint getVerificationEndpoint() {
+        authenticate();
+        return SharedSignalsProvider.current().verificationEndpoint();
+    }
+
+    protected AuthenticationManager.AuthResult authenticate() {
+        var session = KeycloakSessionUtil.getKeycloakSession();
+        var authenticator = new AppAuthManager.BearerTokenAuthenticator(session);
+        var auth = authenticator.authenticate();
+        if (auth == null) {
+            throw new WebApplicationException(Response.Status.UNAUTHORIZED);
+        }
+        return auth;
+    }
+
+    // Receiver Endpoints below
+
     /**
      * $ISSUER/ssf/push/caepdev
      *
@@ -32,9 +82,12 @@ public class SharedSignalsRealmResourceProvider implements RealmResourceProvider
      * @return
      */
     @Path("/push")
-    public SharedSignalsPushEndpoint pushEndpoint() {
-        return getKeycloakSession().getProvider(SharedSignalsProvider.class).pushEndpoint();
+    public PushEndpoint pushEndpoint() {
+        authenticate();
+        return SharedSignalsProvider.current().pushEndpoint();
     }
+
+    // Receiver Management Endpoints below
 
     /**
      * $ISSUER/ssf/management
@@ -45,7 +98,8 @@ public class SharedSignalsRealmResourceProvider implements RealmResourceProvider
     @Path("/management")
     public ReceiverManagementEndpoint receiverManagementEndpoint() {
         // TODO check manage permissions
-        return getKeycloakSession().getProvider(SharedSignalsProvider.class).receiverManagementEndpoint();
+        authenticate();
+        return SharedSignalsProvider.current().receiverManagementEndpoint();
     }
 
 

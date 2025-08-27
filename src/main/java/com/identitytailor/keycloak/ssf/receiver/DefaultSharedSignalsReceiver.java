@@ -1,12 +1,10 @@
 package com.identitytailor.keycloak.ssf.receiver;
 
 import com.identitytailor.keycloak.ssf.SharedSignalsProvider;
-import com.identitytailor.keycloak.ssf.event.SecurityEventToken;
-import com.identitytailor.keycloak.ssf.event.types.SecurityEvent;
 import com.identitytailor.keycloak.ssf.keys.TransmitterKeyManager;
 import com.identitytailor.keycloak.ssf.receiver.transmitterclient.TransmitterClient;
 import com.identitytailor.keycloak.ssf.receiver.verification.VerificationState;
-import com.identitytailor.keycloak.ssf.storage.SharedSignalsStore;
+import com.identitytailor.keycloak.ssf.storage.VerificationStore;
 import com.identitytailor.keycloak.ssf.streams.model.DeliveryMethod;
 import com.identitytailor.keycloak.ssf.streams.model.SharedSignalsStreamRepresentation;
 import com.identitytailor.keycloak.ssf.transmitter.SharedSignalsTransmitterMetadata;
@@ -160,7 +158,7 @@ public class DefaultSharedSignalsReceiver implements SharedSignalsReceiver {
     @Override
     public void requestVerification() {
 
-        SharedSignalsStore storage = sharedSignals.storage();
+        VerificationStore storage = sharedSignals.verificationStore();
 
         // store current verification state
         RealmModel realm = session.getContext().getRealm();

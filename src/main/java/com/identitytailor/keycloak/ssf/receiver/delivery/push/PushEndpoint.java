@@ -2,11 +2,15 @@ package com.identitytailor.keycloak.ssf.receiver.delivery.push;
 
 import com.identitytailor.keycloak.ssf.SharedSignalsFailureResponse;
 import com.identitytailor.keycloak.ssf.SharedSignalsProvider;
+import com.identitytailor.keycloak.ssf.Ssf;
 import com.identitytailor.keycloak.ssf.event.SecurityEventToken;
 import com.identitytailor.keycloak.ssf.event.parser.SharedSignalsParsingException;
 import com.identitytailor.keycloak.ssf.receiver.ReceiverModel;
-import com.identitytailor.keycloak.ssf.receiver.management.ReceiverManager;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -26,18 +30,12 @@ import static org.keycloak.utils.KeycloakSessionUtil.getKeycloakSession;
  * https://www.rfc-editor.org/rfc/rfc8935.html
  */
 @JBossLog
-public class SharedSignalsPushEndpoint {
-
-    public static final String APPLICATION_SECEVENT_JWT_TYPE = "application/secevent+jwt";
+public class PushEndpoint {
 
     protected final SharedSignalsProvider sharedSignals;
 
-    public SharedSignalsPushEndpoint() {
-        sharedSignals = getSharedSignalsProvider();
-    }
-
-    protected SharedSignalsProvider getSharedSignalsProvider() {
-        return getKeycloakSession().getProvider(SharedSignalsProvider.class);
+    public PushEndpoint() {
+        sharedSignals = SharedSignalsProvider.current();
     }
 
     @Path("{receiverAlias}")
@@ -52,7 +50,8 @@ public class SharedSignalsPushEndpoint {
         KeycloakSession session = getKeycloakSession();
         KeycloakContext context = session.getContext();
         RealmModel realm = context.getRealm();
-        ReceiverModel receiverModel = new ReceiverManager(session).getReceiverModel(context, receiverAlias);
+
+        ReceiverModel receiverModel = sharedSignals.receiverManager().getReceiverModel(context, receiverAlias);
         if (receiverModel == null) {
             throw newSharedSignalFailureResponse(Response.Status.BAD_REQUEST, SharedSignalsFailureResponse.ERROR_INVALID_REQUEST, "Invalid receiver");
         }
@@ -64,7 +63,7 @@ public class SharedSignalsPushEndpoint {
             }
         }
 
-        if (!APPLICATION_SECEVENT_JWT_TYPE.equals(contentType)) {
+        if (!Ssf.APPLICATION_SECEVENT_JWT_TYPE.equals(contentType)) {
             log.warnf("Received PUSH request with unsupported content type '%s'.", contentType);
         }
 

@@ -14,7 +14,7 @@ import com.identitytailor.keycloak.ssf.event.types.VerificationEvent;
 import com.identitytailor.keycloak.ssf.receiver.ReceiverModel;
 import com.identitytailor.keycloak.ssf.receiver.verification.SharedSignalsStreamVerificationException;
 import com.identitytailor.keycloak.ssf.receiver.verification.VerificationState;
-import com.identitytailor.keycloak.ssf.storage.SharedSignalsStore;
+import com.identitytailor.keycloak.ssf.storage.VerificationStore;
 import lombok.extern.jbosslog.JBossLog;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.RealmModel;
@@ -28,11 +28,11 @@ public class DefaultSecurityEventProcessor implements SecurityEventProcessor {
 
     protected final SecurityEventListener securityEventListener;
 
-    protected final SharedSignalsStore sharedSignalsStore;
+    protected final VerificationStore verificationStore;
 
-    public DefaultSecurityEventProcessor(SharedSignalsProvider sharedSignals, SecurityEventListener securityEventListener, SharedSignalsStore sharedSignalsStore) {
+    public DefaultSecurityEventProcessor(SharedSignalsProvider sharedSignals, SecurityEventListener securityEventListener, VerificationStore verificationStore) {
         this.securityEventListener = securityEventListener;
-        this.sharedSignalsStore = sharedSignalsStore;
+        this.verificationStore = verificationStore;
     }
 
     @Override
@@ -121,7 +121,7 @@ public class DefaultSecurityEventProcessor implements SecurityEventProcessor {
 
         if (givenState.equals(expectedState)) {
             log.debugf("Verification successful!. jti=%s state=%s", jti, givenState);
-            sharedSignalsStore.clearVerificationState(realm, receiverModel);
+            verificationStore.clearVerificationState(realm, receiverModel);
             return true;
         }
 
@@ -143,7 +143,7 @@ public class DefaultSecurityEventProcessor implements SecurityEventProcessor {
 
 
     protected VerificationState getVerificationState(RealmModel realm, ReceiverModel receiverModel) {
-        return sharedSignalsStore.getVerificationState(realm, receiverModel);
+        return verificationStore.getVerificationState(realm, receiverModel);
     }
 
     protected String extractStreamIdFromVerificationEvent(SecurityEventProcessingContext processingContext, SecurityEvent securityEvent) {

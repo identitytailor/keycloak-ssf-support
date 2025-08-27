@@ -15,15 +15,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import static org.keycloak.utils.KeycloakSessionUtil.getKeycloakSession;
-
 public class SecurityEventPollingResponseDeserializer extends JsonDeserializer<Map<String, SecurityEventToken>> {
 
     @Override
     public Map<String, SecurityEventToken> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
 
-        SharedSignalsProvider provider = getSharedSignalsProvider();
+        SharedSignalsProvider provider = SharedSignalsProvider.current();
 
         Map<String, SecurityEventToken> setsMap = new HashMap<>();
         Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
@@ -46,7 +44,4 @@ public class SecurityEventPollingResponseDeserializer extends JsonDeserializer<M
         return setsMap;
     }
 
-    protected SharedSignalsProvider getSharedSignalsProvider() {
-        return getKeycloakSession().getProvider(SharedSignalsProvider.class);
-    }
 }
