@@ -159,14 +159,23 @@ public class ReceiverManager {
         }
     }
 
+    public void removeAllReceivers(RealmModel realm) {
+        listReceivers(realm).forEach(receiverModel -> {
+            removeReceiver(realm, receiverModel);
+        });
+    }
+
     public void removeReceiver(KeycloakContext context, ReceiverModel receiverModel) {
+        removeReceiver(context.getRealm(), receiverModel);
+    }
+
+    public void removeReceiver(RealmModel realm, ReceiverModel receiverModel) {
 
         SharedSignalsReceiver receiver = lookupReceiver(receiverModel);
         if (receiver == null) {
             return;
         }
 
-        RealmModel realm = context.getRealm();
         ReceiverModel model = receiver.getReceiverModel();
 
         if (receiverModel.getStreamId() == null) {
@@ -176,16 +185,13 @@ public class ReceiverManager {
             receiver.unregisterStream();
         }
 
-        unregisterKeys(model);
+        unregisterKeys(realm, model);
 
         realm.removeComponent(model);
         log.debugf("Removed receiver component with id %s. realm=%s receiver=%s", model.getId(), realm.getName(), model.getAlias());
     }
 
-    public void unregisterKeys(ReceiverModel model) {
-
-        KeycloakContext context = session.getContext();
-        RealmModel realm = context.getRealm();
+    public void unregisterKeys(RealmModel realm, ReceiverModel model) {
 
         for (ComponentModel receiverKeyModel : realm.getComponentsStream(model.getId(), TransmitterKeyProviderFactory.PROVIDER_ID).toList()) {
             realm.removeComponent(receiverKeyModel);
@@ -227,8 +233,13 @@ public class ReceiverManager {
 
     public List<ReceiverModel> listReceivers(KeycloakContext context) {
 
-        List<ReceiverModel> receiverModels = context.getRealm()
-                .getComponentsStream(context.getRealm().getId(), SharedSignalsReceiver.class.getName())
+        RealmModel realm = context.getRealm();
+        return listReceivers(realm);
+    }
+
+    public List<ReceiverModel> listReceivers(RealmModel realm) {
+        List<ReceiverModel> receiverModels = realm
+                .getComponentsStream(realm.getId(), SharedSignalsReceiver.class.getName())
                 .map(ReceiverModel::new)
                 .toList();
 
@@ -236,7 +247,10 @@ public class ReceiverManager {
     }
 
     public ReceiverModel getReceiverModel(KeycloakContext context, String alias) {
-        RealmModel realm = context.getRealm();
+       return getReceiverModel(context.getRealm(), alias);
+    }
+
+    public ReceiverModel getReceiverModel(RealmModel realm, String alias) {
         String componentId = createReceiverComponentId(realm, alias);
         ComponentModel component = realm.getComponent(componentId);
         if (component != null) {

@@ -6,8 +6,12 @@ GET {{transmitterIssuer}}/ssf/streams
 Authorization: Bearer {{transmitterToken}}
 
 > {%
-    client.global.set("stream_id", response.body['stream_id'])
+    client.global.set("stream_id", response.body[0]['stream_id'])
 %}
+
+### Get Stream by stream_id
+GET {{transmitterIssuer}}/ssf/streams?stream_id={{ stream_id}}
+Authorization: Bearer {{transmitterToken}}
 
 ### Create Stream (Push)
 POST {{transmitterIssuer}}/ssf/streams

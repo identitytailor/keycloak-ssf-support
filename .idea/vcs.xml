@@ -2,5 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/scratch/caep.dev" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/scratch/echo-server" vcs="Git" />
   </component>
 </project>

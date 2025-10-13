@@ -3,15 +3,15 @@ GET {{transmitterConfigUrl}}
 
 ### List receiver
 GET {{issuer}}/ssf/management/receivers
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
 
 ### Get receiver
 GET {{issuer}}/ssf/management/receivers/{{receiverAlias}}
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
 
 ### Register receiver with managed stream (POLL)
 PUT {{issuer}}/ssf/management/receivers/{{receiverAlias}}
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
 Accept: application/json
 Content-Type: application/json
 
@@ -35,7 +35,7 @@ Content-Type: application/json
 
 ### Register receiver with unmanaged stream (POLL)
 PUT {{issuer}}/ssf/management/receivers/{{receiverAlias}}
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
 Accept: application/json
 Content-Type: application/json
 
@@ -50,7 +50,7 @@ Content-Type: application/json
 
 ### Register receiver with unmanaged stream (PUSH)
 PUT {{issuer}}/ssf/management/receivers/{{receiverAlias}}
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
 Accept: application/json
 Content-Type: application/json
 
@@ -65,7 +65,7 @@ Content-Type: application/json
 
 ### Register receiver with managed stream (PUSH)
 PUT {{issuer}}/ssf/management/receivers/{{receiverAlias}}
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
 Accept: application/json
 Content-Type: application/json
 
@@ -89,15 +89,15 @@ Content-Type: application/json
 
 ### Remove receiver
 DELETE {{issuer}}/ssf/management/receivers/{{receiverAlias}}
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
 Accept: application/json
 
 ### Refresh receiver
 POST {{issuer}}/ssf/management/receivers/{{receiverAlias}}/refresh
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
 Accept: application/json
 
 ### Trigger verification
 POST {{issuer}}/ssf/management/receivers/{{receiverAlias}}/verify
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
 Accept: application/json
