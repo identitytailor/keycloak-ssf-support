@@ -3,8 +3,6 @@ package com.identitytailor.keycloak.ssf.receiver.delivery.poll;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.identitytailor.keycloak.ssf.event.SecurityEventToken;
 
 import java.util.HashMap;
 import java.util.Map;

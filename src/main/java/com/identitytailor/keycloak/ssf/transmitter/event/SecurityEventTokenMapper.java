@@ -1,5 +1,8 @@
 package com.identitytailor.keycloak.ssf.transmitter.event;
 
+import com.identitytailor.keycloak.ssf.event.types.VerificationEvent;
+import com.identitytailor.keycloak.ssf.event.types.caep.CredentialChange;
+import com.identitytailor.keycloak.ssf.event.types.caep.SessionRevoked;
 import com.identitytailor.keycloak.ssf.transmitter.SecurityEventToken;
 import com.identitytailor.keycloak.ssf.transmitter.metadata.TransmitterService;
 import com.identitytailor.keycloak.ssf.transmitter.streams.StreamConfiguration;
@@ -52,7 +55,7 @@ public class SecurityEventTokenMapper {
             Map<String, Object> events = new HashMap<>();
             Map<String, Object> verificationEvent = new HashMap<>();
             verificationEvent.put("state", state);
-            events.put("https://schemas.openid.net/secevent/ssf/event-type/verification", verificationEvent);
+            events.put(VerificationEvent.TYPE, verificationEvent);
             verificationEventToken.setEvents(events);
 
             return verificationEventToken;
@@ -112,8 +115,8 @@ public class SecurityEventTokenMapper {
                 sessionRevokedEvent.put("reason_admin", reasonAdmin);
             }
 
-            sessionRevokedEvent.put("event_timestamp", System.currentTimeMillis() / 1000);
-            events.put("https://schemas.openid.net/secevent/caep/event-type/session-revoked", sessionRevokedEvent);
+            sessionRevokedEvent.put("event_timestamp", Time.currentTime());
+            events.put(SessionRevoked.TYPE, sessionRevokedEvent);
             eventToken.setEvents(events);
 
             return eventToken;
@@ -147,8 +150,8 @@ public class SecurityEventTokenMapper {
             Map<String, Object> credentialChangeEvent = new HashMap<>();
 
             credentialChangeEvent.put("credential_type", credentialType);
-            credentialChangeEvent.put("event_timestamp", System.currentTimeMillis() / 1000);
-            events.put("https://schemas.openid.net/secevent/caep/event-type/credential-change", credentialChangeEvent);
+            credentialChangeEvent.put("event_timestamp", Time.currentTime());
+            events.put(CredentialChange.TYPE, credentialChangeEvent);
             event.setEvents(events);
 
             return event;
@@ -177,11 +180,10 @@ public class SecurityEventTokenMapper {
                     event.getUserId(),
                     "User logout"
             );
-            case UPDATE_PASSWORD, UPDATE_CREDENTIAL -> generateCredentialChangeEvent(
+            case UPDATE_CREDENTIAL -> generateCredentialChangeEvent(
                     event.getUserId(),
-                    "password"
+                    event.getDetails().get("credential_type")
             );
-
             // Add more event mappings as needed
 
             default ->

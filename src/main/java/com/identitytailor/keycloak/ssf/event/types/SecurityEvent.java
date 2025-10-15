@@ -1,6 +1,8 @@
 package com.identitytailor.keycloak.ssf.event.types;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.identitytailor.keycloak.ssf.event.InitiatingEntity;
 import com.identitytailor.keycloak.ssf.event.subjects.SubjectId;

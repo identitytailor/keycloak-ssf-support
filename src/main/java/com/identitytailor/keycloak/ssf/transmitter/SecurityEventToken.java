@@ -11,7 +11,6 @@ import org.keycloak.json.StringOrArrayDeserializer;
 import org.keycloak.json.StringOrArraySerializer;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Represents a Security Event Token (SET) in the SSF transmitter.

@@ -12,19 +12,19 @@ import com.identitytailor.keycloak.ssf.receiver.transmitterclient.TransmitterCli
 import com.identitytailor.keycloak.ssf.receiver.verification.SecurityEventsVerificationClient;
 import com.identitytailor.keycloak.ssf.storage.VerificationStore;
 import com.identitytailor.keycloak.ssf.transmitter.delivery.SecurityEventTokenDeliveryService;
-import com.identitytailor.keycloak.ssf.transmitter.delivery.polling.PollEndpoint;
-import com.identitytailor.keycloak.ssf.transmitter.event.SecurityEventTokenEncoder;
-import com.identitytailor.keycloak.ssf.transmitter.streams.StreamManagementEndpoint;
-import com.identitytailor.keycloak.ssf.transmitter.streams.StreamStatusEndpoint;
-import com.identitytailor.keycloak.ssf.transmitter.metadata.TransmitterConfigurationEndpoint;
-import com.identitytailor.keycloak.ssf.transmitter.verification.VerificationEndpoint;
 import com.identitytailor.keycloak.ssf.transmitter.delivery.polling.PollDeliveryService;
+import com.identitytailor.keycloak.ssf.transmitter.delivery.polling.PollEndpoint;
 import com.identitytailor.keycloak.ssf.transmitter.delivery.push.PushDeliveryService;
-import com.identitytailor.keycloak.ssf.transmitter.streams.StreamService;
+import com.identitytailor.keycloak.ssf.transmitter.event.SecurityEventTokenEncoder;
+import com.identitytailor.keycloak.ssf.transmitter.metadata.TransmitterConfigurationEndpoint;
 import com.identitytailor.keycloak.ssf.transmitter.metadata.TransmitterService;
-import com.identitytailor.keycloak.ssf.transmitter.verification.VerificationService;
 import com.identitytailor.keycloak.ssf.transmitter.storage.SsfEventStore;
 import com.identitytailor.keycloak.ssf.transmitter.storage.SsfStreamStore;
+import com.identitytailor.keycloak.ssf.transmitter.streams.StreamManagementEndpoint;
+import com.identitytailor.keycloak.ssf.transmitter.streams.StreamService;
+import com.identitytailor.keycloak.ssf.transmitter.streams.StreamStatusEndpoint;
+import com.identitytailor.keycloak.ssf.transmitter.verification.VerificationEndpoint;
+import com.identitytailor.keycloak.ssf.transmitter.verification.VerificationService;
 import org.keycloak.provider.Provider;
 
 import java.util.Set;

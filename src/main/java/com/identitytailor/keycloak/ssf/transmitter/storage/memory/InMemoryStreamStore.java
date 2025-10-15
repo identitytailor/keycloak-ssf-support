@@ -1,7 +1,7 @@
 package com.identitytailor.keycloak.ssf.transmitter.storage.memory;
 
-import com.identitytailor.keycloak.ssf.transmitter.streams.StreamConfiguration;
 import com.identitytailor.keycloak.ssf.transmitter.storage.SsfStreamStore;
+import com.identitytailor.keycloak.ssf.transmitter.streams.StreamConfiguration;
 import com.identitytailor.keycloak.ssf.transmitter.streams.StreamStatus;
 import lombok.extern.jbosslog.JBossLog;
 import org.keycloak.common.util.Time;

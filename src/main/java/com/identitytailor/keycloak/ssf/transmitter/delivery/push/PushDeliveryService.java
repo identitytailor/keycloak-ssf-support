@@ -1,14 +1,13 @@
 package com.identitytailor.keycloak.ssf.transmitter.delivery.push;
 
 import com.identitytailor.keycloak.ssf.Ssf;
-import com.identitytailor.keycloak.ssf.transmitter.SecurityEventToken;
 import com.identitytailor.keycloak.ssf.transmitter.streams.StreamConfiguration;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.Response;
 import lombok.extern.jbosslog.JBossLog;
 import org.apache.http.entity.StringEntity;
 import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.models.KeycloakSession;
-
-import jakarta.ws.rs.core.Response;
 
 /**
  * Service for delivering events using the PUSH delivery method.
@@ -58,7 +57,7 @@ public class PushDeliveryService {
         try {
 
             try(var response = createSimpleHttp(endpointUrl, authorizationHeader)
-                    .header("Content-Type", Ssf.APPLICATION_SECEVENT_JWT_TYPE)
+                    .header(HttpHeaders.CONTENT_TYPE, Ssf.APPLICATION_SECEVENT_JWT_TYPE)
                     .entity(new StringEntity(eventToken))
                     .asResponse()) {
 

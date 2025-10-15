@@ -12,29 +12,35 @@ public interface SsfEventStore {
     /**
      * Stores an event for later polling.
      *
+     * @param streamId
      * @param event The event to store
      */
-    void storeEvent(SecurityEventToken event);
+    void storeEvent(String streamId, SecurityEventToken event);
 
     /**
      * Gets events for polling.
      *
+     * @param streamId
      * @param maxEvents The maximum number of events to return
      * @return A list of events
      */
-    List<SecurityEventToken> getEvents(int maxEvents);
+    List<SecurityEventToken> getEvents(String streamId, int maxEvents);
 
     /**
      * Acknowledges an event.
      *
-     * @param eventId The ID of the event to acknowledge
+     * @param streamId
+     * @param eventId  The ID of the event to acknowledge
      */
-    void acknowledgeEvent(String eventId);
+    void acknowledgeEvent(String streamId, String eventId);
+
+    void failedEvent(String streamId, String eventId);
 
     /**
      * Checks if there are more events available.
      *
+     * @param streamId
      * @return true if there are more events available, false otherwise
      */
-    boolean hasMoreEvents();
+    boolean hasMoreEvents(String streamId);
 }

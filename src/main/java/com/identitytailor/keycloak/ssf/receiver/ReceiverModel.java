@@ -4,7 +4,12 @@ import com.identitytailor.keycloak.ssf.streams.model.DeliveryMethod;
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class ReceiverModel extends ComponentModel {
 

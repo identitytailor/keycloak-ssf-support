@@ -2,9 +2,9 @@ package com.identitytailor.keycloak.ssf.transmitter.verification;
 
 import com.identitytailor.keycloak.ssf.transmitter.SecurityEventToken;
 import com.identitytailor.keycloak.ssf.transmitter.delivery.SecurityEventTokenDeliveryService;
-import com.identitytailor.keycloak.ssf.transmitter.streams.StreamConfiguration;
-import com.identitytailor.keycloak.ssf.transmitter.storage.SsfStreamStore;
 import com.identitytailor.keycloak.ssf.transmitter.event.SecurityEventTokenMapper;
+import com.identitytailor.keycloak.ssf.transmitter.storage.SsfStreamStore;
+import com.identitytailor.keycloak.ssf.transmitter.streams.StreamConfiguration;
 import lombok.extern.jbosslog.JBossLog;
 
 /**

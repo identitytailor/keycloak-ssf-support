@@ -5,8 +5,8 @@ import com.identitytailor.keycloak.ssf.receiver.delivery.poll.SharedSignalsStrea
 import com.identitytailor.keycloak.ssf.receiver.delivery.push.PushEndpoint;
 import com.identitytailor.keycloak.ssf.receiver.management.ReceiverManagementEndpoint;
 import com.identitytailor.keycloak.ssf.transmitter.delivery.polling.PollEndpoint;
-import com.identitytailor.keycloak.ssf.transmitter.streams.StreamManagementEndpoint;
 import com.identitytailor.keycloak.ssf.transmitter.metadata.TransmitterConfigurationEndpoint;
+import com.identitytailor.keycloak.ssf.transmitter.streams.StreamManagementEndpoint;
 import com.identitytailor.keycloak.ssf.transmitter.streams.StreamStatusEndpoint;
 import com.identitytailor.keycloak.ssf.transmitter.verification.VerificationEndpoint;
 import jakarta.ws.rs.Path;
