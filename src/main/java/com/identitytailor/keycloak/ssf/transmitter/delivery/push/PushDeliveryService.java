@@ -5,8 +5,10 @@ import com.identitytailor.keycloak.ssf.transmitter.streams.StreamConfiguration;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.jbosslog.JBossLog;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.entity.StringEntity;
-import org.keycloak.broker.provider.util.SimpleHttp;
+import org.keycloak.http.simple.SimpleHttp;
+import org.keycloak.http.simple.SimpleHttpRequest;
 import org.keycloak.models.KeycloakSession;
 
 /**
@@ -76,10 +78,14 @@ public class PushDeliveryService {
         }
     }
 
-    protected SimpleHttp createSimpleHttp(String endpointUrl, String authorizationHeader) {
-        return SimpleHttp.doPost(endpointUrl, session)
-                .connectTimeoutMillis(2000)
-                .socketTimeOutMillis(3000)
+    protected SimpleHttpRequest createSimpleHttp(String endpointUrl, String authorizationHeader) {
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectionRequestTimeout(2000)
+                .setSocketTimeout(3000)
+                .build();
+        return SimpleHttp.create(session)
+                .withRequestConfig(requestConfig)
+                .doPost(endpointUrl)
                 .auth(authorizationHeader);
     }
 

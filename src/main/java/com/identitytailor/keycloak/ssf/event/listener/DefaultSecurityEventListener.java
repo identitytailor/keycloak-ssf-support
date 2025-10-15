@@ -28,7 +28,7 @@ public class DefaultSecurityEventListener implements SecurityEventListener {
         String eventType = securityEvent.getEventType();
         SubjectId subjectId = securityEvent.getSubjectId();
         var eventClass = securityEvent.getClass();
-        log.infof("Security event received. jti=%s eventType=%s subjectId=%s eventClass=%s", securityEventId, eventType, subjectId, eventClass);
+        log.infof("Security event received. jti=%s eventType=%s subjectId=%s eventClass=%s", securityEventId, eventType, subjectId, eventClass.getName());
 
         KeycloakContext context = session.getContext();
         RealmModel realm = context.getRealm();
