@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Service for managing SSF streams.
@@ -35,7 +36,7 @@ public class StreamService {
         String receiverClientId = session.getContext().getAuthenticationSession().getClient().getClientId();
         if (stream.getAudience() == null || !stream.getAudience().contains(receiverClientId)) {
             log.warnf("Authorization failed. Client '%s' attempted to access stream '%s' owned by '%s'.",
-                    callingClientId, stream.getStreamId(), stream.getAudience());
+                    receiverClientId, stream.getStreamId(), stream.getAudience());
             return false;
         }
         return true;
