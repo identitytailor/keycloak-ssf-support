@@ -32,10 +32,6 @@ import java.time.Duration;
 @JBossLog
 public class SharedSignalsRealmResourceProvider implements RealmResourceProvider {
 
-    private static final String ADMIN_CLIENT_ID = "realm-management";
-    private static final String SSF_ADMIN_ROLE = "ssf-admin";
-    private static final String SSF_VIEWER_ROLE = "ssf-viewer";
-
     @Override
     public Object getResource() {
         return this;
