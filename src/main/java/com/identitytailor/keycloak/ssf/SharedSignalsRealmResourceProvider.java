@@ -11,6 +11,7 @@ import com.identitytailor.keycloak.ssf.transmitter.streams.StreamStatusEndpoint;
 import com.identitytailor.keycloak.ssf.transmitter.verification.VerificationEndpoint;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.jbosslog.JBossLog;
 import org.keycloak.Config;
@@ -19,6 +20,9 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.utils.PostMigrationEvent;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
+import org.keycloak.services.resources.admin.AdminAuth;
+import org.keycloak.services.resources.admin.fgap.AdminPermissionEvaluator;
+import org.keycloak.services.resources.admin.fgap.AdminPermissions;
 import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.services.resource.RealmResourceProviderFactory;
 import org.keycloak.utils.KeycloakSessionUtil;
@@ -97,8 +101,16 @@ public class SharedSignalsRealmResourceProvider implements RealmResourceProvider
      */
     @Path("/management")
     public ReceiverManagementEndpoint receiverManagementEndpoint() {
-        // TODO check manage permissions
-        authenticate();
+        KeycloakSession session = KeycloakSessionUtil.getKeycloakSession();
+        AuthenticationManager.AuthResult auth = authenticate();
+        AdminAuth adminAuth = new AdminAuth(session.getContext().getRealm(), auth.getToken(), auth.getUser(), auth.getClient());
+
+        AdminPermissionEvaluator realmAuth = AdminPermissions.evaluator(session, adminAuth.getRealm(), adminAuth);
+
+        // From the realm evaluator, navigate to the clients permissions and require the 'manage' permission.
+        // This will automatically throw a ForbiddenException if the permission is not met.
+        realmAuth.clients().requireManage();
+        
         return SharedSignalsProvider.current().receiverManagementEndpoint();
     }
 
