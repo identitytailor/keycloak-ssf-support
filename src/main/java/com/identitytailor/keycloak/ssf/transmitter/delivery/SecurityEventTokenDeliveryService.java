@@ -1,5 +1,6 @@
 package com.identitytailor.keycloak.ssf.transmitter.delivery;
 
+import com.identitytailor.keycloak.ssf.streams.model.DeliveryMethod;
 import com.identitytailor.keycloak.ssf.transmitter.SecurityEventToken;
 import com.identitytailor.keycloak.ssf.transmitter.delivery.polling.PollDeliveryService;
 import com.identitytailor.keycloak.ssf.transmitter.delivery.push.PushDeliveryService;
@@ -32,7 +33,7 @@ public class SecurityEventTokenDeliveryService {
     /**
      * Gets the event type from a security event token.
      *
-             * @param event The security event token
+     * @param event The security event token
      * @return The event type, or null if not found
      */
     protected String getEventType(SecurityEventToken event) {
@@ -48,9 +49,15 @@ public class SecurityEventTokenDeliveryService {
      * @param event The event to deliver
      */
     public void deliverEvent(SecurityEventToken event) {
-        try {
-            List<StreamConfiguration> streams = streamStore.getAllStreams();
 
+        List<StreamConfiguration> streams = streamStore.getAllStreams();
+
+        if (streams.isEmpty()) {
+            log.warnf("No streams found. Discarding event %s", event.getJti());
+            return;
+        }
+
+        try {
             for (StreamConfiguration stream : streams) {
                 // Skip disabled or paused streams
                 if (shouldSkipStream(stream)) {
@@ -68,7 +75,7 @@ public class SecurityEventTokenDeliveryService {
                 var delivery = stream.getDelivery();
                 String deliveryMethod = delivery.getMethod();
 
-                if ("urn:ietf:rfc:8935".equals(deliveryMethod)) {
+                if (DeliveryMethod.PUSH.getSpecUrn().equals(deliveryMethod)) {
                     // PUSH delivery
                     try {
                         String encodedEvent = securityEventTokenEncoder.encode(event);
@@ -76,10 +83,10 @@ public class SecurityEventTokenDeliveryService {
                     } catch (Exception e) {
                         log.error("Error delivering event via PUSH to stream " + stream.getStreamId(), e);
                     }
-                } else if ("urn:ietf:rfc:8936".equals(deliveryMethod)) {
+                } else if (DeliveryMethod.POLL.getSpecUrn().equals(deliveryMethod)) {
                     // POLL delivery
                     try {
-                        pollDeliveryService.storeEvent(event);
+                        pollDeliveryService.storeEvent(stream.getStreamId(), event);
                     } catch (Exception e) {
                         log.error("Error storing event for POLL delivery for stream " + stream.getStreamId(), e);
                     }

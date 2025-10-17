@@ -13,12 +13,16 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PollRequest {
 
-    @JsonProperty("return_immediately")
-    private Boolean returnImmediately;
+    @JsonProperty("returnImmediately")
+    protected Boolean returnImmediately;
 
-    @JsonProperty("max_events")
-    private Integer maxEvents;
+    @JsonProperty("maxEvents")
+    protected Integer maxEvents;
 
     @JsonProperty("ack")
-    private List<String> ack;
+    protected List<String> ack;
+
+    @JsonProperty("setErrs")
+    protected List<String> setErrs;
+
 }

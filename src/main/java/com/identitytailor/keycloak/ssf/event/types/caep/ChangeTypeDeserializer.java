@@ -3,6 +3,7 @@ package com.identitytailor.keycloak.ssf.event.types.caep;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;

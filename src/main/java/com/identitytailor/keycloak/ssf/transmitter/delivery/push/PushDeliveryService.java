@@ -1,14 +1,15 @@
 package com.identitytailor.keycloak.ssf.transmitter.delivery.push;
 
 import com.identitytailor.keycloak.ssf.Ssf;
-import com.identitytailor.keycloak.ssf.transmitter.SecurityEventToken;
 import com.identitytailor.keycloak.ssf.transmitter.streams.StreamConfiguration;
-import lombok.extern.jbosslog.JBossLog;
-import org.apache.http.entity.StringEntity;
-import org.keycloak.broker.provider.util.SimpleHttp;
-import org.keycloak.models.KeycloakSession;
-
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
+import lombok.extern.jbosslog.JBossLog;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.entity.StringEntity;
+import org.keycloak.http.simple.SimpleHttp;
+import org.keycloak.http.simple.SimpleHttpRequest;
+import org.keycloak.models.KeycloakSession;
 
 /**
  * Service for delivering events using the PUSH delivery method.
@@ -58,7 +59,7 @@ public class PushDeliveryService {
         try {
 
             try(var response = createSimpleHttp(endpointUrl, authorizationHeader)
-                    .header("Content-Type", Ssf.APPLICATION_SECEVENT_JWT_TYPE)
+                    .header(HttpHeaders.CONTENT_TYPE, Ssf.APPLICATION_SECEVENT_JWT_TYPE)
                     .entity(new StringEntity(eventToken))
                     .asResponse()) {
 
@@ -77,10 +78,14 @@ public class PushDeliveryService {
         }
     }
 
-    protected SimpleHttp createSimpleHttp(String endpointUrl, String authorizationHeader) {
-        return SimpleHttp.doPost(endpointUrl, session)
-                .connectTimeoutMillis(2000)
-                .socketTimeOutMillis(3000)
+    protected SimpleHttpRequest createSimpleHttp(String endpointUrl, String authorizationHeader) {
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectionRequestTimeout(2000)
+                .setSocketTimeout(3000)
+                .build();
+        return SimpleHttp.create(session)
+                .withRequestConfig(requestConfig)
+                .doPost(endpointUrl)
                 .auth(authorizationHeader);
     }
 

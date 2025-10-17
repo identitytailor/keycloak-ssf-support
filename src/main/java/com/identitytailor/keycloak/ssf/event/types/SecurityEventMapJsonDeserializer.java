@@ -22,9 +22,7 @@ public class SecurityEventMapJsonDeserializer extends JsonDeserializer<Map<Strin
 
         Map<String, SecurityEvent> eventsMap = new HashMap<>();
 
-        Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> entry = fields.next();
+        for (Map.Entry<String, JsonNode> entry : node.properties()) {
             String eventType = entry.getKey();  // Extracts event type key
             JsonNode eventData = entry.getValue(); // Extracts event data
 

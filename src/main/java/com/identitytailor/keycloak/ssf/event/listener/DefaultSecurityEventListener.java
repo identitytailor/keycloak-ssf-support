@@ -6,7 +6,11 @@ import com.identitytailor.keycloak.ssf.event.subjects.SubjectUserLookup;
 import com.identitytailor.keycloak.ssf.event.types.SecurityEvent;
 import com.identitytailor.keycloak.ssf.event.types.caep.SessionRevoked;
 import lombok.extern.jbosslog.JBossLog;
-import org.keycloak.models.*;
+import org.keycloak.models.KeycloakContext;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
+import org.keycloak.models.UserSessionModel;
 
 import java.util.List;
 
@@ -24,7 +28,7 @@ public class DefaultSecurityEventListener implements SecurityEventListener {
         String eventType = securityEvent.getEventType();
         SubjectId subjectId = securityEvent.getSubjectId();
         var eventClass = securityEvent.getClass();
-        log.infof("Security event received. jti=%s eventType=%s subjectId=%s eventClass=%s", securityEventId, eventType, subjectId, eventClass);
+        log.infof("Security event received. jti=%s eventType=%s subjectId=%s eventClass=%s", securityEventId, eventType, subjectId, eventClass.getName());
 
         KeycloakContext context = session.getContext();
         RealmModel realm = context.getRealm();
@@ -32,7 +36,7 @@ public class DefaultSecurityEventListener implements SecurityEventListener {
         switch (securityEvent) {
             case SessionRevoked sessionRevoked -> {
 
-                UserModel user = SubjectUserLookup.lookupUser(session, realm, subjectId);
+                UserModel user = lookupUser(realm, subjectId);
                 if (user != null) {
                     List<UserSessionModel> sessions = session.sessions().getUserSessionsStream(realm, user).toList();
                     if (!sessions.isEmpty()) {
@@ -47,6 +51,10 @@ public class DefaultSecurityEventListener implements SecurityEventListener {
             default -> {
             }
         }
+    }
+
+    protected UserModel lookupUser(RealmModel realm, SubjectId subjectId) {
+        return SubjectUserLookup.lookupUser(session, realm, subjectId);
     }
 
 }

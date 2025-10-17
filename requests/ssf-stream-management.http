@@ -6,11 +6,11 @@ GET {{issuer}}/ssf/.well-known/ssf-configuration
 
 ### Get Streams
 GET {{issuer}}/ssf/streams
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
 
-### Create Stream
+### Create Stream with PUSH method
 POST {{issuer}}/ssf/streams
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
 Content-Type: application/json
 
 {
@@ -33,22 +33,47 @@ Content-Type: application/json
     client.global.set("stream_id", response.body['stream_id'])
 %}
 
+### Create Stream with POLL method
+POST {{issuer}}/ssf/streams
+Authorization: Bearer {{keycloakToken}}
+Content-Type: application/json
+
+{
+  "description": "Stream for ssf-receiver-1 with POLL",
+  "delivery": {
+    "method": "urn:ietf:rfc:8936"
+  },
+  "events_requested": [
+    "https://schemas.openid.net/secevent/caep/event-type/session-revoked",
+    "https://schemas.openid.net/secevent/caep/event-type/credential-change",
+    "https://schemas.openid.net/secevent/caep/event-type/device-compliance-change",
+    "https://schemas.openid.net/secevent/caep/event-type/token-claims-change",
+    "https://schemas.openid.net/secevent/caep/event-type/assurance-level-change"
+  ]
+}
+
+> {%
+    client.global.set("stream_id", response.body['stream_id'])
+%}
+
 ### Get Stream by StreamId
 GET {{issuer}}/ssf/streams?stream_id={{ stream_id }}
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
+
+> {%
+    client.global.set("stream_id", response.body['stream_id'])
+%}
 
 ### Update Stream
 POST {{issuer}}/ssf/streams
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
 Content-Type: application/json
 
 {
   "stream_id": "{{ stream_id }}",
-  "description": "Stream for ssf-receiver-1 updated",
+  "description": "Stream for ssf-receiver-1 with POLL",
   "delivery": {
-    "method": "urn:ietf:rfc:8935",
-    "endpoint_url": "http://receiver.example.com:8909/ssf/push",
-    "authorization_header": "dummyAuthToken"
+    "method": "urn:ietf:rfc:8936"
   },
   "events_requested": [
     "https://schemas.openid.net/secevent/caep/event-type/session-revoked",
@@ -61,11 +86,11 @@ Content-Type: application/json
 
 ### Get Stream status
 GET {{issuer}}/ssf/streams/status?stream_id={{ stream_id }}
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
 
 ### Pause Stream
 POST {{issuer}}/ssf/streams/status?stream_id={{ stream_id }}
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
 Content-Type: application/json
 
 {
@@ -76,7 +101,7 @@ Content-Type: application/json
 
 ### Enable Stream
 POST {{issuer}}/ssf/streams/status?stream_id={{ stream_id }}
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
 Content-Type: application/json
 
 {
@@ -86,4 +111,25 @@ Content-Type: application/json
 
 ### Delete Stream
 DELETE {{issuer}}/ssf/streams?stream_id={{ stream_id }}
-Authorization: Bearer {{transmitterToken}}
+Authorization: Bearer {{keycloakToken}}
+
+### Poll Stream
+POST {{issuer}}/ssf/streams/poll?stream_id={{ stream_id }}
+Authorization: Bearer {{keycloakToken}}
+Content-Type: application/json
+Accept: application/json
+
+{"returnImmediately":true, "maxEvents":100}
+
+> {%
+    client.global.set("pollingResponse", response.body['sets']);
+    client.global.set("pollingResponseSetsArray", JSON.stringify(Object.keys(response.body['sets'])));
+%}
+
+### Poll Stream / ack all events
+POST {{issuer}}/ssf/streams/poll?stream_id={{ stream_id }}
+Authorization: Bearer {{keycloakToken}}
+Content-Type: application/json
+Accept: application/json
+
+{"returnImmediately":true, "maxEvents":0, "ack": {{ $.pollingResponseSetsArray }} }

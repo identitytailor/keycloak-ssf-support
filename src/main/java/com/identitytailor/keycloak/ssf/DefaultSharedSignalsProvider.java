@@ -394,7 +394,7 @@ public class DefaultSharedSignalsProvider implements SharedSignalsProvider {
 
     protected PollDeliveryService getPollDeliveryService() {
         if (pollDeliveryService == null) {
-            pollDeliveryService = new PollDeliveryService(session, new InMemoryEventStore(session));
+            pollDeliveryService = new PollDeliveryService(session, getSecurityEventTokenEncoder(), new InMemoryEventStore(session));
         }
         return pollDeliveryService;
     }

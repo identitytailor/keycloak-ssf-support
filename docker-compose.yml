@@ -26,7 +26,7 @@ services:
       - keycloak-db-data:/var/lib/postgresql/data:z
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.3.5
+    image: quay.io/keycloak/keycloak:26.4.0
 
     environment:
       
@@ -35,7 +35,8 @@ services:
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
       
       # Feature config, see: https://www.keycloak.org/server/features
-      KC_FEATURES: preview
+      KC_FEATURES: preview,workflows
+      KC_SPI_EVENTS_LISTENER_WORKFLOW_EVENT_LISTENER_STEP_RUNNER_TASK_INTERVAL: 1000
       
       # Disable specific features
       #      KC_FEATURES_DISABLED: "device-flow"
@@ -63,8 +64,7 @@ services:
       # Additional JVM options
       JAVA_OPTS_APPEND: "--show-version"
       # Remote Debugging
-      DEBUG: "true"
-      DEBUG_PORT: "*:8787"
+      KC_DEBUG: "true"
 
     ports:
       - "18080:8080"
