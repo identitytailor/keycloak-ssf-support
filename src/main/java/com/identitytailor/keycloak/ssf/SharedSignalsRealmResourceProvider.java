@@ -11,6 +11,7 @@ import com.identitytailor.keycloak.ssf.transmitter.streams.StreamStatusEndpoint;
 import com.identitytailor.keycloak.ssf.transmitter.verification.VerificationEndpoint;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.jbosslog.JBossLog;
 import org.keycloak.Config;
@@ -19,6 +20,9 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.utils.PostMigrationEvent;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
+import org.keycloak.services.resources.admin.AdminAuth;
+import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+import org.keycloak.services.resources.admin.permissions.Permissions;
 import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.services.resource.RealmResourceProviderFactory;
 import org.keycloak.utils.KeycloakSessionUtil;
@@ -27,6 +31,10 @@ import java.time.Duration;
 
 @JBossLog
 public class SharedSignalsRealmResourceProvider implements RealmResourceProvider {
+
+    private static final String ADMIN_CLIENT_ID = "realm-management";
+    private static final String SSF_ADMIN_ROLE = "ssf-admin";
+    private static final String SSF_VIEWER_ROLE = "ssf-viewer";
 
     @Override
     public Object getResource() {
@@ -73,6 +81,16 @@ public class SharedSignalsRealmResourceProvider implements RealmResourceProvider
         return auth;
     }
 
+    private AdminAuth authenticateAsAdmin() {
+        AuthenticationManager.AuthResult authResult = new AppAuthManager.BearerTokenAuthenticator(session).authenticate();
+        if (authResult == null) {
+            throw new WebApplicationException(Response.Status.UNAUTHORIZED);
+        }
+
+        // The AdminAuth object holds the context (realm, user, client) needed for permission checks.
+        return new AdminAuth(session.getContext().getRealm(), authResult.getToken(), authResult.getUser(), authResult.getClient());
+    }
+
     // Receiver Endpoints below
 
     /**
@@ -97,8 +115,10 @@ public class SharedSignalsRealmResourceProvider implements RealmResourceProvider
      */
     @Path("/management")
     public ReceiverManagementEndpoint receiverManagementEndpoint() {
-        // TODO check manage permissions
-        authenticate();
+        AdminAuth auth = authenticateAsAdmin();
+        if (!Permissions.clients(session, auth.getRealm(), auth.getClient()).canManage()) {
+             throw new ForbiddenException("You do not have permission to manage clients (and SSF receivers).");
+        }
         return SharedSignalsProvider.current().receiverManagementEndpoint();
     }
 

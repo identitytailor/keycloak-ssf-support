@@ -28,6 +28,19 @@ public class StreamService {
         this.transmitterService = transmitterService;
     }
 
+    private boolean isAudience(StreamConfiguration stream) {
+        if (stream == null) {
+            return false;
+        }
+        String receiverClientId = session.getContext().getAuthenticationSession().getClient().getClientId();
+        if (stream.getAudience() == null || !stream.getAudience().contains(receiverClientId)) {
+            log.warnf("Authorization failed. Client '%s' attempted to access stream '%s' owned by '%s'.",
+                    callingClientId, stream.getStreamId(), stream.getAudience());
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Creates a new stream.
      *
@@ -81,7 +94,11 @@ public class StreamService {
      * @return The stream configuration, or null if not found
      */
     public StreamConfiguration getStream(String streamId) {
-        return streamStore.getStream(streamId);
+        StreamConfiguration stream = streamStore.getStream(streamId);
+        if (isAudience(stream)) {
+            return stream;
+        }
+        return null;
     }
 
     /**
@@ -90,7 +107,9 @@ public class StreamService {
      * @return A list of all stream configurations
      */
     public List<StreamConfiguration> getAllStreams() {
-        return streamStore.getAllStreams();
+        return streamStore.getAllStreams().stream()
+            .filter(stream -> isAudience(stream))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -101,7 +120,7 @@ public class StreamService {
      */
     public StreamConfiguration updateStream(StreamConfiguration streamConfiguration) {
         String streamId = streamConfiguration.getStreamId();
-        StreamConfiguration existingStream = streamStore.getStream(streamId);
+        StreamConfiguration existingStream = getStream(streamId);
         
         if (existingStream == null) {
             return null;
@@ -131,7 +150,7 @@ public class StreamService {
     public StreamConfiguration replaceStream(StreamConfiguration streamConfiguration) {
 
         String streamId = streamConfiguration.getStreamId();
-        StreamConfiguration existingStream = streamStore.getStream(streamId);
+        StreamConfiguration existingStream = getStream(streamId);
 
         if (existingStream == null) {
             return null;
@@ -164,7 +183,7 @@ public class StreamService {
      * @return true if the stream was deleted, false if not found
      */
     public boolean deleteStream(String streamId) {
-        StreamConfiguration existingStream = streamStore.getStream(streamId);
+        StreamConfiguration existingStream = getStream(streamId);
         
         if (existingStream == null) {
             return false;
@@ -181,7 +200,7 @@ public class StreamService {
      * @return The stream status, or null if not found
      */
     public StreamStatus getStreamStatus(String streamId) {
-        StreamConfiguration stream = streamStore.getStream(streamId);
+        StreamConfiguration stream = getStream(streamId);
 
         if (stream == null) {
             return null;
@@ -212,7 +231,7 @@ public class StreamService {
             return null;
         }
 
-        StreamConfiguration stream = streamStore.getStream(streamId);
+        StreamConfiguration stream = getStream(streamId);
         if (stream == null) {
             return null;
         }
