@@ -21,8 +21,8 @@ import org.keycloak.models.utils.PostMigrationEvent;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.resources.admin.AdminAuth;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
-import org.keycloak.services.resources.admin.permissions.Permissions;
+import org.keycloak.services.resources.admin.fgap.AdminPermissionEvaluator;
+import org.keycloak.services.resources.admin.fgap.AdminPermissions;
 import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.services.resource.RealmResourceProviderFactory;
 import org.keycloak.utils.KeycloakSessionUtil;
@@ -77,16 +77,6 @@ public class SharedSignalsRealmResourceProvider implements RealmResourceProvider
         return auth;
     }
 
-    private AdminAuth authenticateAsAdmin() {
-        AuthenticationManager.AuthResult authResult = new AppAuthManager.BearerTokenAuthenticator(session).authenticate();
-        if (authResult == null) {
-            throw new WebApplicationException(Response.Status.UNAUTHORIZED);
-        }
-
-        // The AdminAuth object holds the context (realm, user, client) needed for permission checks.
-        return new AdminAuth(session.getContext().getRealm(), authResult.getToken(), authResult.getUser(), authResult.getClient());
-    }
-
     // Receiver Endpoints below
 
     /**
@@ -111,10 +101,16 @@ public class SharedSignalsRealmResourceProvider implements RealmResourceProvider
      */
     @Path("/management")
     public ReceiverManagementEndpoint receiverManagementEndpoint() {
-        AdminAuth auth = authenticateAsAdmin();
-        if (!Permissions.clients(session, auth.getRealm(), auth.getClient()).canManage()) {
-             throw new ForbiddenException("You do not have permission to manage clients (and SSF receivers).");
-        }
+        KeycloakSession session = KeycloakSessionUtil.getKeycloakSession();
+        AuthenticationManager.AuthResult auth = authenticate();
+        AdminAuth adminAuth = new AdminAuth(session.getContext().getRealm(), auth.getToken(), auth.getUser(), auth.getClient());
+
+        AdminPermissionEvaluator realmAuth = AdminPermissions.evaluator(session, adminAuth.getRealm(), adminAuth);
+
+        // From the realm evaluator, navigate to the clients permissions and require the 'manage' permission.
+        // This will automatically throw a ForbiddenException if the permission is not met.
+        realmAuth.clients().requireManage();
+        
         return SharedSignalsProvider.current().receiverManagementEndpoint();
     }
 
